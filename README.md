@@ -1,7 +1,7 @@
 <div align="center">
   <img src="build/dingdo-icon.png" width="112" alt="叮做图标" />
   <h1>叮做 · Dingdo</h1>
-  <p><strong>专注待办、提醒和顶部状态栏交互的本机工具。</strong></p>
+  <p><strong>开源、本地优先的 macOS 刘海待办与 Windows 桌面提醒工具。</strong></p>
   <p>
     <a href="https://github.com/zxc19950223/Dingdo/releases/latest"><strong>下载 macOS 版</strong></a>
     ·
@@ -19,9 +19,11 @@
   </p>
 </div>
 
-叮做是一个常驻 macOS / Windows 屏幕顶部的本地待办工具。它可以显示为 macOS 刘海位置的单色胶囊，也可以显示为 Windows 顶部的贴顶胶囊；点击后展开完整面板。
+叮做（Dingdo）是一个常驻 macOS / Windows 屏幕顶部的开源待办、提醒和日历工具。它可以显示为 macOS 刘海位置的单色胶囊，也可以显示为 Windows 顶部的贴顶胶囊；点击后展开完整的待办面板。
 
-核心能力围绕待办、提醒和系统音频展示，不要求账号，不依赖云端服务。
+核心能力围绕待办管理、强提醒、日历视图、Siri 提醒事项导入、桌面小组件和音乐播放信息展示，不要求账号，不依赖云端服务。
+
+**Dingdo** is an open-source, local-first todo and reminder app for macOS and Windows. It lives near the MacBook notch or at the top of the Windows desktop, with strong reminders, a calendar view, Siri Reminders import, desktop widgets, local storage, and media playback information. No account or cloud service is required.
 
 ## 界面预览
 
