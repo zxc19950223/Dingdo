@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>强提醒</title>
+    <link rel="stylesheet" href="./strong-reminder.css" />
+  </head>
+  <body>
+    <main id="strong-root" class="strong-root">
+      <section class="strong-card" role="alertdialog" aria-modal="true" aria-labelledby="strong-heading">
+        <header class="strong-head">
+          <span class="strong-alert-mark" aria-hidden="true">!</span>
+          <div>
+            <span class="strong-kicker">强提醒 · 必须完成 2 个回答</span>
+            <h1 id="strong-heading">现在需要处理这条待办</h1>
+          </div>
+        </header>
+
+        <section class="strong-task">
+          <strong id="strong-task-title">待办</strong>
+          <span id="strong-task-meta"></span>
+        </section>
+
+        <div class="strong-progress" aria-label="回答进度">
+          <i data-step="0"></i><i data-step="1"></i>
+        </div>
+
+        <section class="strong-question">
+          <span id="strong-step-label">问题 1 / 2</span>
+          <h2 id="strong-question-text">这个待办完成了吗？</h2>
+          <div class="strong-options" id="strong-options"></div>
+          <div class="strong-deadline" id="strong-deadline-editor" hidden>
+            <span id="strong-deadline-label">选择新的截止时间</span>
+            <div class="strong-deadline-field">
+              <input id="strong-deadline" type="text" readonly placeholder="选择日期时间" />
+              <button id="strong-deadline-toggle" type="button" aria-label="打开日期时间选择器">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="16" rx="3"></rect>
+                  <path d="M8 3v4M16 3v4M3 10h18"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="strong-date-picker" id="strong-date-picker" hidden>
+              <header>
+                <button id="strong-picker-previous" type="button" aria-label="上个月">‹</button>
+                <strong id="strong-picker-month"></strong>
+                <button id="strong-picker-next" type="button" aria-label="下个月">›</button>
+              </header>
+              <div class="strong-picker-week" aria-hidden="true">
+                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+              </div>
+              <div class="strong-picker-grid" id="strong-picker-grid"></div>
+              <div class="strong-picker-time">
+                <select id="strong-picker-hour" aria-label="小时"></select>
+                <span>:</span>
+                <select id="strong-picker-minute" aria-label="分钟"></select>
+              </div>
+              <footer>
+                <button id="strong-picker-today" type="button">今天</button>
+                <button id="strong-picker-done" type="button">完成</button>
+              </footer>
+            </div>
+          </div>
+          <p class="strong-error" id="strong-error" hidden></p>
+        </section>
+
+        <footer class="strong-actions">
+          <button id="strong-emergency-exit" type="button" hidden>应急退出并停止强提醒</button>
+          <button id="strong-back" type="button" hidden>上一步</button>
+          <button id="strong-next" type="button">下一步</button>
+        </footer>
+
+        <section class="strong-complete-confirm" id="strong-complete-confirm" hidden role="alertdialog" aria-modal="true" aria-labelledby="strong-complete-confirm-title">
+          <span class="strong-complete-mark" aria-hidden="true">✓</span>
+          <h2 id="strong-complete-confirm-title">确认这个待办真的已经完成了吗？</h2>
+          <p>确认后会立即标记为已完成，并停止所有后续强提醒，不再进入第 2 题。</p>
+          <div class="strong-complete-actions">
+            <button id="strong-complete-cancel" type="button">返回，还未完成</button>
+            <button id="strong-complete-confirm-button" type="button" disabled>确认已完成</button>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script src="./strong-reminder.js" defer></script>
+  </body>
+</html>

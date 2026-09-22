@@ -1,0 +1,125 @@
+{
+  "name": "dingdo",
+  "version": "2.0.0",
+  "description": "Dingdo - a local desktop workspace for macOS and Windows",
+  "main": "main.js",
+  "author": "zxc19950223",
+  "license": "MIT",
+  "scripts": {
+    "test": "node scripts/test-desktop.js",
+    "build:media-helper": "node scripts/build-media-helper.js",
+    "start": "electron .",
+    "build": "electron-builder --mac dmg --publish never",
+    "build:win": "electron-builder --win nsis --x64 --publish never",
+    "build:zip": "electron-builder --mac zip",
+    "pack": "electron-builder --dir",
+    "screenshots": "electron scripts/capture-demo-screenshots.js"
+  },
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.15.7"
+  },
+  "build": {
+    "appId": "io.github.zxc19950223.dingdo",
+    "productName": "叮做",
+    "artifactName": "Dingdo-${version}-${arch}.${ext}",
+    "copyright": "© 2026 Dingdo contributors",
+    "asar": false,
+    "directories": {
+      "output": "dist.noindex",
+      "buildResources": "build"
+    },
+    "afterPack": "./build/afterPack.js",
+    "files": [
+      "main.js",
+      "main-services.js",
+      "media-session.js",
+      "browser-media.js",
+      "platform.js",
+      "report-export.js",
+      "build/dingdo-icon.png",
+      "build/media-session-helper",
+      "preload.js",
+      "renderer/**/*",
+      "scripts/codex-notify.js",
+      "scripts/claude-notify.js",
+      "package.json",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/.bin",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}"
+    ],
+    "mac": {
+      "icon": "build/dingdo-icon.icns",
+      "category": "public.app-category.productivity",
+      "minimumSystemVersion": "13.0",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "darkModeSupport": true,
+      "extendInfo": {
+        "LSUIElement": true,
+        "NSHighResolutionCapable": true,
+        "CFBundleDisplayName": "叮做",
+        "NSAppleEventsUsageDescription": "叮做需要读取浏览器媒体状态和系统提醒事项，用于首页媒体展示与 Siri 待办导入。",
+        "NSRemindersFullAccessUsageDescription": "叮做需要读取你指定的提醒事项列表，用于导入 Siri 创建的待办。",
+        "NSRemindersUsageDescription": "叮做需要读取你指定的提醒事项列表，用于导入 Siri 创建的待办。"
+      }
+    },
+    "win": {
+      "icon": "build/dingdo-icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Dingdo-${version}-windows-${arch}-setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": false,
+      "deleteAppDataOnUninstall": false
+    },
+    "dmg": {
+      "title": "叮做 ${version}",
+      "iconSize": 100,
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.18",
+    "ws": "^8.21.3"
+  }
+}

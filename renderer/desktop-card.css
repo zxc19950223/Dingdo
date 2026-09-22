@@ -1,0 +1,378 @@
+:root {
+  color-scheme: light dark;
+  --card-bg: rgba(245, 247, 251, 0.94);
+  --card-border: rgba(26, 34, 48, 0.14);
+  --card-text: #151a23;
+  --card-secondary: #5e6878;
+  --card-muted: #8a94a3;
+  --card-shadow: rgba(27, 38, 55, 0.2);
+  --status-color: #7b8492;
+  --status-bg: rgba(89, 101, 119, 0.12);
+  --success: #2fa968;
+  --danger: #d94b4d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card-bg: rgba(24, 27, 33, 0.94);
+    --card-border: rgba(255, 255, 255, 0.13);
+    --card-text: #f4f6f9;
+    --card-secondary: #b6bdc9;
+    --card-muted: #8992a0;
+    --card-shadow: rgba(0, 0, 0, 0.5);
+    --status-color: #b2bac6;
+    --status-bg: rgba(255, 255, 255, 0.1);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--card-text);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.desktop-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  background: var(--card-bg);
+  box-shadow: 0 14px 38px var(--card-shadow);
+  backdrop-filter: blur(24px) saturate(1.15);
+  overflow: hidden;
+}
+
+.desktop-card {
+  overflow-y: auto;
+}
+
+.desktop-card[data-status="in_progress"] {
+  --status-color: #4c8ff2;
+  --status-bg: rgba(76, 143, 242, 0.16);
+}
+
+.desktop-card[data-status="blocked"] {
+  --status-color: #df8a32;
+  --status-bg: rgba(223, 138, 50, 0.17);
+}
+
+.desktop-card[data-status="done"] {
+  --status-color: var(--success);
+  --status-bg: rgba(47, 169, 104, 0.16);
+}
+
+.desktop-card-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -6px -6px 7px;
+  padding: 6px;
+  -webkit-app-region: drag;
+}
+
+.desktop-card-title-wrap {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.desktop-card-grip {
+  flex: 0 0 auto;
+  color: var(--card-muted);
+  font: 9px/1 var(--font-mono, monospace);
+  letter-spacing: -1px;
+  opacity: .72;
+}
+
+.desktop-card-status-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  border-radius: 50%;
+  background: var(--status-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--status-color) 16%, transparent);
+}
+
+.desktop-card-title {
+  -webkit-app-region: no-drag;
+  min-width: 0;
+  overflow: visible;
+  color: var(--card-text);
+  font-size: 13px;
+  font-weight: 680;
+  line-height: 1.42;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.desktop-card-title:focus {
+  outline: 2px solid color-mix(in srgb, var(--status-color) 52%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.desktop-card-head-actions {
+  display: flex;
+  gap: 3px;
+  -webkit-app-region: no-drag;
+}
+
+.desktop-card-icon {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--card-muted);
+  cursor: pointer;
+}
+
+.desktop-card-icon:hover {
+  background: color-mix(in srgb, var(--card-text) 8%, transparent);
+  color: var(--card-text);
+}
+
+.desktop-card-icon.active {
+  color: #d99a35;
+}
+
+.desktop-card-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.desktop-card-meta {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+  color: var(--card-muted);
+  font-size: 9px;
+}
+
+.desktop-card-status {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border: 1px solid color-mix(in srgb, var(--status-color) 42%, transparent);
+  border-radius: 999px;
+  background: var(--status-bg);
+  color: var(--status-color);
+  font-weight: 700;
+}
+
+.desktop-card-due.overdue {
+  color: var(--danger);
+  font-weight: 650;
+}
+
+.desktop-card-reason,
+.desktop-card-next {
+  display: -webkit-box;
+  margin: 7px 0 0;
+  overflow: hidden;
+  color: var(--card-secondary);
+  font-size: 10px;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.desktop-card-reason {
+  color: color-mix(in srgb, var(--status-color) 78%, var(--card-text));
+}
+
+.desktop-card-next {
+  color: var(--card-muted);
+}
+
+.desktop-card-editor {
+  display: grid;
+  gap: 8px;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--card-border);
+  -webkit-app-region: no-drag;
+}
+
+.desktop-card-editor[hidden] {
+  display: none;
+}
+
+.desktop-card-editor label {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+}
+
+.desktop-card-editor label > span,
+.desktop-card-deadline-presets > span {
+  color: var(--card-muted);
+  font-size: 8.5px;
+}
+
+.desktop-card-editor select,
+.desktop-card-editor textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  outline: none;
+  background: color-mix(in srgb, var(--card-text) 5%, transparent);
+  color: var(--card-text);
+  font: 9px/1.4 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+}
+
+.desktop-card-editor select {
+  height: 27px;
+  padding: 0 6px;
+}
+
+.desktop-card-editor textarea {
+  resize: vertical;
+  padding: 6px 7px;
+}
+
+.desktop-card-editor select:focus,
+.desktop-card-editor textarea:focus {
+  border-color: color-mix(in srgb, var(--status-color) 48%, transparent);
+}
+
+.desktop-card-deadline-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.desktop-card-deadline-presets > span {
+  flex: 0 0 54px;
+}
+
+.desktop-card-deadline-presets button,
+.desktop-card-editor-actions button,
+.desktop-card-edit-toggle {
+  min-height: 25px;
+  padding: 0 7px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--card-text) 5%, transparent);
+  color: var(--card-secondary);
+  font-size: 8px;
+  cursor: pointer;
+}
+
+.desktop-card-deadline-presets button:hover,
+.desktop-card-editor-actions button:hover,
+.desktop-card-edit-toggle:hover {
+  background: color-mix(in srgb, var(--card-text) 9%, transparent);
+  color: var(--card-text);
+}
+
+.desktop-card-editor-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 8.5px;
+}
+
+.desktop-card-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.desktop-card-editor-actions button:last-child {
+  border-color: color-mix(in srgb, var(--status-color) 45%, transparent);
+  background: var(--status-bg);
+  color: var(--status-color);
+  font-weight: 650;
+}
+
+.desktop-card-footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 9px;
+}
+
+.desktop-card-toggle,
+.desktop-card-open {
+  height: 28px;
+  border: 1px solid var(--card-border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--card-text) 5%, transparent);
+  color: var(--card-secondary);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.desktop-card-toggle {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px 0 6px;
+}
+
+.desktop-card-check {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid color-mix(in srgb, var(--card-text) 42%, transparent);
+  border-radius: 50%;
+}
+
+.desktop-card-check svg {
+  width: 7px;
+  height: 7px;
+  opacity: 0;
+}
+
+.desktop-card[data-status="done"] .desktop-card-check {
+  border-color: var(--success);
+  background: var(--success);
+}
+
+.desktop-card[data-status="done"] .desktop-card-check svg {
+  opacity: 1;
+}
+
+.desktop-card-open {
+  padding: 0 10px;
+  color: var(--status-color);
+}
+
+.desktop-card-edit-toggle {
+  margin-left: auto;
+}
+
+.desktop-card-progress {
+  color: var(--card-muted);
+  font-size: 8px;
+  white-space: nowrap;
+}

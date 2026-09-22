@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>桌面待办</title>
+  <link rel="stylesheet" href="./desktop-card.css" />
+</head>
+<body>
+  <section class="desktop-card" id="desktop-card" data-status="todo">
+    <header class="desktop-card-head">
+      <div class="desktop-card-title-wrap">
+        <span class="desktop-card-grip" aria-hidden="true">⋮⋮</span>
+        <span class="desktop-card-status-dot" aria-hidden="true"></span>
+        <strong class="desktop-card-title" id="desktop-card-title" contenteditable="true" spellcheck="false" role="textbox" aria-label="编辑待办名称">待办</strong>
+      </div>
+      <div class="desktop-card-head-actions">
+        <button class="desktop-card-icon" id="desktop-card-pin" type="button" title="切换置顶" aria-label="切换置顶">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 4 6 0-.8 5 3.8 3v2H6v-2l3.8-3L9 4Z"/><path d="M12 14v6"/></svg>
+        </button>
+        <button class="desktop-card-icon" id="desktop-card-close" type="button" title="关闭桌面卡片" aria-label="关闭桌面卡片">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+        </button>
+      </div>
+    </header>
+    <div class="desktop-card-meta">
+      <span class="desktop-card-status" id="desktop-card-status">待办</span>
+      <time id="desktop-card-due"></time>
+      <span id="desktop-card-priority"></span>
+    </div>
+    <p class="desktop-card-reason" id="desktop-card-reason" hidden></p>
+    <p class="desktop-card-next" id="desktop-card-next" hidden></p>
+    <div class="desktop-card-editor" id="desktop-card-editor" hidden>
+      <label>
+        <span>状态</span>
+        <select id="desktop-card-status-select">
+          <option value="todo">待办</option>
+          <option value="in_progress">进行中</option>
+          <option value="blocked">受阻</option>
+          <option value="done">已完成</option>
+        </select>
+      </label>
+      <div class="desktop-card-deadline-presets">
+        <span>推迟</span>
+        <button type="button" data-desktop-deadline="10">10 分钟</button>
+        <button type="button" data-desktop-deadline="30">30 分钟</button>
+        <button type="button" data-desktop-deadline="60">1 小时</button>
+        <button type="button" data-desktop-deadline="tomorrow">明天 09:00</button>
+      </div>
+      <label>
+        <span>受阻原因</span>
+        <textarea id="desktop-card-reason-input" maxlength="2000" rows="2" placeholder="暂时无法推进的原因"></textarea>
+      </label>
+      <label>
+        <span>下一步</span>
+        <textarea id="desktop-card-next-input" maxlength="1200" rows="2" placeholder="接下来怎么处理"></textarea>
+      </label>
+      <p class="desktop-card-editor-error" id="desktop-card-editor-error" hidden></p>
+      <div class="desktop-card-editor-actions">
+        <button id="desktop-card-edit-cancel" type="button">取消</button>
+        <button id="desktop-card-edit-save" type="button">保存</button>
+      </div>
+    </div>
+    <footer class="desktop-card-footer">
+      <button class="desktop-card-toggle" id="desktop-card-toggle" type="button">
+        <span class="desktop-card-check" aria-hidden="true">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span id="desktop-card-toggle-label">标记完成</span>
+      </button>
+      <span class="desktop-card-progress" id="desktop-card-progress"></span>
+      <button class="desktop-card-edit-toggle" id="desktop-card-edit-toggle" type="button">编辑</button>
+      <button class="desktop-card-open" id="desktop-card-open" type="button">打开</button>
+    </footer>
+  </section>
+  <script src="./desktop-card.js"></script>
+</body>
+</html>

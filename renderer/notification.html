@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>叮做提醒</title>
+    <link rel="stylesheet" href="./notification.css" />
+  </head>
+  <body>
+    <main
+      id="notification-root"
+      class="notification-root"
+      aria-live="polite"
+      aria-atomic="true"
+      hidden
+    >
+      <button
+        id="notification-shell"
+        class="notification-shell"
+        type="button"
+        aria-label="打开任务对应窗口"
+      >
+        <span class="notification-content">
+          <span class="notification-logo-wrap" aria-hidden="true">
+            <img class="notification-logo" src="assets/app-logo-128.png" alt="" />
+            <span class="notification-status-dot"></span>
+          </span>
+
+          <span class="notification-copy">
+            <span id="notification-title" class="notification-title">任务已完成</span>
+            <span class="notification-meta">
+              <span id="notification-source" class="notification-source">Codex</span>
+              <span id="notification-detail" class="notification-detail"
+                >任务已完成，可以查看了</span
+              >
+            </span>
+          </span>
+
+          <span class="notification-trailing" aria-hidden="true">
+            <span class="notification-time">刚刚</span>
+            <span id="notification-queue" class="notification-queue" hidden>+1</span>
+          </span>
+        </span>
+      </button>
+      <label id="notification-snooze" class="notification-snooze" hidden>
+        <span>稍后</span>
+        <select id="notification-snooze-select" aria-label="稍后提醒时间">
+          <option value="5">5 分钟</option>
+          <option value="10" selected>10 分钟</option>
+          <option value="30">30 分钟</option>
+          <option value="60">1 小时</option>
+          <option value="1440">明天</option>
+        </select>
+      </label>
+    </main>
+
+    <script src="./notification.js" defer></script>
+  </body>
+</html>

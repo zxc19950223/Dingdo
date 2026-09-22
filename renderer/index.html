@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>叮做 · Dingdo</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app" class="collapsed">
+      <div
+        id="notch"
+        class="notch"
+        role="button"
+        tabindex="0"
+        aria-label="展开叮做"
+        aria-expanded="false"
+        aria-controls="panel"
+      >
+        <div class="notch-media" id="notch-media" hidden aria-hidden="true">
+          <span class="notch-cover" id="notch-cover"></span>
+          <span class="notch-eq" id="notch-eq" aria-hidden="true">
+            <i></i><i></i><i></i>
+          </span>
+        </div>
+        <div class="notch-eyes" id="notch-eyes" hidden aria-hidden="true">
+          <span class="notch-eye"></span>
+          <span class="notch-eye"></span>
+          <span class="notch-mouth" id="notch-mouth"></span>
+        </div>
+        <div class="notch-peek" id="notch-peek" aria-hidden="true">
+          <strong id="notch-peek-title">正在播放</strong>
+          <span id="notch-peek-meta"></span>
+        </div>
+        <div class="notch-dot"></div>
+      </div>
+
+      <div id="panel" class="panel" aria-hidden="true" inert>
+        <header class="topbar">
+          <div class="tabs" id="tabs" role="tablist">
+            <button class="tab" id="tab-button-home" type="button" data-tab="home" role="tab" aria-controls="tab-home" aria-selected="false" tabindex="-1">
+              <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 11.5 12 4l8 7.5" />
+                <path d="M6 10v9h12v-9" />
+              </svg>
+              <span class="tab-label">首页</span>
+            </button>
+            <button class="tab" id="tab-button-todo" type="button" data-tab="todo" role="tab" aria-controls="tab-todo" aria-selected="false" tabindex="-1">
+              <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 7h10" />
+                <path d="M4 12h10" />
+                <path d="M4 17h7" />
+                <path d="M17.5 7.5 19 9l2.5-3" />
+              </svg>
+              <span class="tab-label">待办</span>
+            </button>
+            <button class="tab" id="tab-button-settings" type="button" data-tab="settings" role="tab" aria-controls="tab-settings" aria-selected="false" tabindex="-1">
+              <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.17.38.48.7.86.88.34.16.7.22 1.06.2H21v4h-.09a1.7 1.7 0 0 0-1.51.92Z" />
+              </svg>
+              <span class="tab-label">设置</span>
+            </button>
+            <span class="tab-indicator" id="tab-indicator" aria-hidden="true"></span>
+            <div class="todo-shortcut-hints" id="todo-shortcut-hints" hidden aria-label="待办快捷键">
+              <span title="选择上一条 / 下一条"><kbd>J</kbd><kbd>K</kbd><em>选择</em></span>
+              <span title="完成或恢复当前任务"><kbd>C</kbd><em>完成</em></span>
+              <span title="置顶或取消置顶"><kbd>P</kbd><em>置顶</em></span>
+              <span title="快速添加任务"><kbd>N</kbd><em>新增</em></span>
+              <span title="搜索任务"><kbd>/</kbd><em>搜索</em></span>
+              <span title="关闭详情或清除选择"><kbd>Esc</kbd><em>关闭</em></span>
+            </div>
+          </div>
+
+        </header>
+
+        <div class="shortcut-recorder" id="shortcut-recorder" tabindex="-1" hidden>
+          <span>按下新的唤出快捷键</span>
+          <kbd id="shortcut-recorder-value">等待输入…</kbd>
+          <small>可直接使用空格；其他按键建议搭配 ⌘ / ⌥ / ⌃ / ⇧</small>
+          <button id="shortcut-recorder-cancel" type="button">取消</button>
+        </div>
+
+        <div class="panels" id="panels">
+          <section id="tab-home" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-home" aria-hidden="true" inert>
+            <div class="home-focus-layout" id="home-focus-layout">
+            <div class="home-bento" id="home-bento" aria-label="可长按拖动调整的首页布局">
+              <!-- 系统当前播放 -->
+              <section class="tile home-music" id="home-music" data-home-module="music" data-widget-size="medium" aria-label="当前播放媒体">
+                <canvas class="module-effect-canvas" id="music-color-bends" aria-hidden="true"></canvas>
+                <button class="music-artwork-shell" id="music-artwork" type="button" aria-label="切回当前播放器">
+                  <div class="music-artwork-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="3"/><circle cx="16.5" cy="16" r="3"/></svg>
+                  </div>
+                </button>
+                <div class="music-copy">
+                  <button class="music-kicker" id="music-source" type="button">系统媒体</button>
+                  <strong id="music-title">当前没有播放</strong>
+                  <span id="music-artist">打开任意播放器即可控制</span>
+                  <div class="music-progress" id="music-progress">
+                    <span class="music-progress-track">
+                      <i></i>
+                      <input id="music-seek" type="range" min="0" max="100" step="0.1" value="0" aria-label="播放进度" />
+                    </span>
+                    <time id="music-elapsed">00:00</time>
+                    <time id="music-duration">00:00</time>
+                  </div>
+                  <label class="music-volume">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10v4h4l5 4V6l-5 4H5Z"/><path d="M17 9a5 5 0 0 1 0 6"/></svg>
+                    <input id="music-volume" type="range" min="0" max="100" step="1" value="50" aria-label="系统音量" />
+                  </label>
+                </div>
+                <div class="music-controls" role="group" aria-label="当前播放控制">
+                  <button type="button" data-music-action="previous" aria-label="上一首"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 9 12l9 6V6Z" /><path d="M6 6v12" /></svg></button>
+                  <button class="music-play" id="music-play-toggle" type="button" data-music-action="play" aria-label="播放"><svg viewBox="0 0 24 24"><path d="m9 7 8 5-8 5z" /></svg></button>
+                  <button type="button" data-music-action="next" aria-label="下一首"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 9 6-9 6V6Z" /><path d="M18 6v12" /></svg></button>
+                </div>
+              </section>
+
+              <section class="tile home-pomodoro" id="home-pomodoro" data-home-module="pomodoro" data-widget-size="mini" aria-label="番茄钟">
+                <button class="pomodoro-toggle" id="pomodoro-toggle" type="button" aria-label="开始番茄钟">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 7 8 5-8 5z" /></svg>
+                </button>
+                <div class="pomodoro-readout">
+                  <div class="pomodoro-status" aria-label="预计结束时间">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM9.7 19a2.5 2.5 0 0 0 4.6 0H9.7Z" /></svg>
+                    <time id="pomodoro-end-time">--:--</time>
+                  </div>
+                  <div class="pomodoro-dial" id="pomodoro-dial" aria-label="设置番茄钟时长">
+                    <input id="pomodoro-minutes" value="05" inputmode="numeric" maxlength="2" aria-label="分钟" />
+                    <span>:</span>
+                    <input id="pomodoro-seconds" value="00" inputmode="numeric" maxlength="2" aria-label="秒" />
+                  </div>
+                  <span class="pomodoro-caption">Timer</span>
+                </div>
+                <button class="pomodoro-reset" id="pomodoro-reset" type="button" aria-label="重置番茄钟" hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" /></svg>
+                </button>
+              </section>
+
+              <!-- 快速录音与实时转写 -->
+              <section class="tile home-recorder" id="home-recorder" data-home-module="recorder" data-widget-size="medium">
+                <div class="recorder-head">
+                  <span class="recording-state-dot" id="home-recording-dot"></span>
+                  <span class="tile-label" id="home-recording-state">快速录音</span>
+                  <time id="home-recording-time">00:00</time>
+                </div>
+                <p class="home-transcript" id="home-live-transcript" aria-live="polite" hidden></p>
+                <div class="recorder-controls">
+                  <button class="record-control record-start" id="record-start" type="button" aria-label="开始录音">
+                    <span></span>
+                  </button>
+                  <button class="record-control" id="record-pause" type="button" aria-label="暂停录音" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 7v10M15 7v10" /></svg>
+                  </button>
+                  <button class="record-control" id="record-stop" type="button" aria-label="结束录音" disabled>
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5" /></svg>
+                  </button>
+                </div>
+              </section>
+
+              <!-- 当前打开的窗口 -->
+              <section class="tile home-windows" data-home-module="windows" data-widget-size="large">
+                <div class="tile-head">
+                  <span class="tile-label">当前窗口</span>
+                  <button class="windows-hidden" id="windows-hidden" type="button" hidden title="恢复已隐藏窗口"></button>
+                  <button class="squircle windows-refresh" id="windows-refresh" type="button" aria-label="刷新当前窗口">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 11a8 8 0 1 0-2.35 5.65" /><path d="M20 5v6h-6" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="window-list" id="window-list">
+                  <div class="window-empty">展开后读取当前窗口…</div>
+                </div>
+              </section>
+
+              <!-- 镜子：静态人像封面；点击切换实时镜头 -->
+              <section class="tile home-mirror" data-home-module="mirror" data-widget-size="medium">
+                <button class="mirror-stage" id="mirror-stage" type="button" aria-label="打开实时镜子" aria-pressed="false">
+                  <img class="mirror-photo" src="assets/mirror-portrait.jpg" alt="" draggable="false" />
+                  <img class="mirror-photo mirror-liquid-layer" src="assets/mirror-portrait.jpg" alt="" draggable="false" />
+                  <video class="mirror-video" id="mirror-video" muted playsinline aria-hidden="true"></video>
+                  <canvas class="mirror-water-canvas" id="mirror-water-canvas" aria-hidden="true"></canvas>
+                  <span class="mirror-pixel-reveal" id="mirror-pixel-reveal" aria-hidden="true"></span>
+                  <span class="mirror-ripple" aria-hidden="true"></span>
+                  <svg class="mirror-filter-defs" width="0" height="0" aria-hidden="true">
+                    <filter id="mirror-liquid-filter" x="-15%" y="-15%" width="130%" height="130%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.022" numOctaves="2" seed="7" result="noise" />
+                      <feDisplacementMap id="mirror-displacement" in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="B" />
+                    </filter>
+                  </svg>
+                </button>
+              </section>
+
+              <!-- 速记 -->
+              <section class="tile home-note" data-home-module="note" data-widget-size="large">
+                <div class="note-toolbar" role="toolbar" aria-label="随笔记操作">
+                  <span class="tile-label">随笔记</span>
+                  <div class="note-persist-actions" role="group" aria-label="速记保存操作">
+                    <button class="note-mode note-save-btn" id="note-save-btn" type="button" aria-label="保存笔记" title="保存笔记">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h12l2 2v14H5z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="note-body">
+                  <textarea
+                    id="home-note"
+                    class="note-input"
+                    placeholder="用 Markdown 随手记点什么…"
+                    aria-label="Markdown 速记内容"
+                    spellcheck="false"
+                  ></textarea>
+                </div>
+              </section>
+
+              <!-- 常用指令 -->
+              <section class="tile home-commands" data-home-module="commands" data-widget-size="medium">
+                <div class="tile-head">
+                  <span class="tile-label">常用指令</span>
+                  <button class="bulk-delete" id="command-bulk-delete" type="button" hidden>删除</button>
+                </div>
+                <input class="command-add" id="command-add" type="text" placeholder="输入指令，回车保存…" maxlength="500" autocomplete="off" spellcheck="false" />
+                <div class="command-list" id="command-list"></div>
+              </section>
+
+            </div>
+            <aside class="tile home-today-summary" id="home-today-summary" aria-label="今天待办">
+              <header>
+                <div>
+                  <span class="tile-label">今天</span>
+                  <strong id="home-today-title">今天要做</strong>
+                </div>
+                <button id="home-today-open" type="button">查看全部</button>
+              </header>
+              <div class="home-today-counts">
+                <span><b id="home-today-count">0</b> 今天</span>
+                <span data-tone="overdue"><b id="home-overdue-count">0</b> 逾期</span>
+              </div>
+              <div class="home-today-list" id="home-today-list"></div>
+              <form class="home-today-quick" id="home-today-quick">
+                <input id="home-today-quick-input" type="text" maxlength="160" placeholder="快速添加今天的任务…" autocomplete="off" />
+                <button type="submit" aria-label="添加任务">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </form>
+            </aside>
+            </div>
+          </section>
+
+          <section id="tab-todo" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-todo" aria-hidden="true" inert>
+            <div class="todo-page" id="todo-page">
+              <aside class="todo-sidebar todo-surface">
+                <div class="todo-pane-head">
+                  <div>
+                    <span class="tile-label">智能视图</span>
+                    <strong>待办中心</strong>
+                  </div>
+                  <button class="todo-icon-button" id="todo-list-add" type="button" aria-label="新增大类" title="新增大类">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                </div>
+                <nav class="todo-smart-nav" id="todo-smart-nav" aria-label="待办智能视图">
+                  <button type="button" data-todo-view="inbox" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="M4 10h4l2 2h4l2-2h4"/></svg>
+                    <span>收集箱</span><b data-todo-view-count="inbox">0</b>
+                  </button>
+                  <button type="button" data-todo-view="today">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 14h2M14 14h1"/></svg>
+                    <span>今天</span><b data-todo-view-count="today">0</b>
+                  </button>
+                  <button type="button" data-todo-view="upcoming">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h14v15H5zM8 3v4M16 3v4M9 13h6M12 10v6"/></svg>
+                    <span>未来 7 天</span><b data-todo-view-count="upcoming">0</b>
+                  </button>
+                  <button type="button" data-todo-view="overdue">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v6M12 17h.01"/></svg>
+                    <span>逾期</span><b data-todo-view-count="overdue">0</b>
+                  </button>
+                  <button type="button" data-todo-view="blocked">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 3.5 19h17L12 4Z"/><path d="M12 9v4M12 16h.01"/></svg>
+                    <span>受阻</span><b data-todo-view-count="blocked">0</b>
+                  </button>
+                  <button type="button" data-todo-view="all">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h14"/></svg>
+                    <span>全部任务</span><b data-todo-view-count="all">0</b>
+                  </button>
+                  <button type="button" data-todo-view="completed">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m8.5 12 2.3 2.3 4.8-5"/></svg>
+                    <span>已完成</span><b data-todo-view-count="completed">0</b>
+                  </button>
+                  <button type="button" data-todo-view="calendar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+                    <span>日历</span><b data-todo-view-count="calendar">0</b>
+                  </button>
+                  <button type="button" data-todo-view="history">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12a7 7 0 1 0 2-4.9L5 9"/><path d="M5 5v4h4M12 8v4l3 2"/></svg>
+                    <span>提醒记录</span><b data-todo-view-count="history">0</b>
+                  </button>
+                  <button type="button" data-todo-view="trash">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2M7 7l1 12h10l1-12"/></svg>
+                    <span>回收站</span><b data-todo-view-count="trash">0</b>
+                  </button>
+                </nav>
+                <div class="todo-saved-filters" id="todo-saved-filters" hidden>
+                  <div class="todo-list-heading"><span>保存筛选</span><small>点击应用</small></div>
+                  <div id="todo-saved-filter-list"></div>
+                </div>
+                <div class="todo-list-heading">
+                  <span>分类</span>
+                  <small>最多两级</small>
+                </div>
+                <div class="todo-list-tree" id="todo-list-tree" aria-label="待办分类"></div>
+                <form class="todo-list-form" id="todo-list-form" hidden>
+                  <input id="todo-list-name" type="text" maxlength="24" placeholder="大类或小类名称" aria-label="分类名称" autocomplete="off" />
+                  <select id="todo-list-parent" aria-label="所属大类">
+                    <option value="">作为大类</option>
+                  </select>
+                  <div class="todo-list-form-section">
+                    <span>默认提醒</span>
+                    <div class="todo-list-default-reminders" id="todo-list-default-reminders">
+                      <button type="button" data-new-list-reminder="10">10 分钟</button>
+                      <button type="button" data-new-list-reminder="60" class="active">1 小时</button>
+                      <button type="button" data-new-list-reminder="1440">1 天</button>
+                    </div>
+                  </div>
+                  <div class="todo-list-form-row">
+                    <select id="todo-list-default-sound" aria-label="分类默认提示音">
+                      <option value="bright">清脆</option>
+                      <option value="soft">柔和</option>
+                      <option value="alert">强提醒</option>
+                      <option value="none">静音</option>
+                    </select>
+                    <select id="todo-list-sort-mode" aria-label="分类任务排序方式">
+                      <option value="auto">自动排序</option>
+                      <option value="manual">手动排序</option>
+                    </select>
+                  </div>
+                  <div>
+                    <button type="button" id="todo-list-cancel">取消</button>
+                    <button type="submit">添加</button>
+                  </div>
+                </form>
+              </aside>
+
+              <section class="todo-board todo-surface">
+                <header class="todo-board-head">
+                  <div class="todo-board-title">
+                    <span class="tile-label" id="todo-view-kicker">收集箱</span>
+                    <strong id="todo-view-title">收集箱</strong>
+                    <small id="todo-view-summary">0 项待办</small>
+                  </div>
+                  <label class="todo-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+                    <input id="todo-search" type="search" placeholder="搜索任务、备注或子任务" aria-label="搜索待办" autocomplete="off" />
+                  </label>
+                  <button class="todo-sort-toggle" id="todo-calendar-previous" type="button" hidden aria-label="上个月">‹</button>
+                  <button class="todo-sort-toggle" id="todo-calendar-next" type="button" hidden aria-label="下个月">›</button>
+                  <select class="todo-board-policy" id="todo-missed-policy" hidden aria-label="错过提醒补发策略">
+                    <option value="none">不补发</option>
+                    <option value="1h">1 小时内</option>
+                    <option value="24h">24 小时内</option>
+                    <option value="3d">3 天内</option>
+                  </select>
+                  <button class="todo-sort-toggle" id="todo-save-filter" type="button" hidden>保存筛选</button>
+                  <select class="todo-board-policy" id="todo-template-select" aria-label="从模板添加任务">
+                    <option value="">模板…</option>
+                  </select>
+                  <button class="todo-sort-toggle" id="todo-sort-toggle" type="button" hidden>自动排序</button>
+                  <button class="todo-bulk-delete" id="todo-bulk-delete" type="button" hidden>删除所选</button>
+                </header>
+
+                <form class="todo-quick-add" id="todo-quick-add">
+                  <input id="todo-quick-title" type="text" maxlength="160" placeholder="快速添加：明天 18:00 提交方案 #工作/产品 !高" aria-label="快速添加待办" autocomplete="off" />
+                  <label>
+                    <span>截止</span>
+                    <input id="todo-quick-deadline" type="text" readonly data-todo-date-input aria-label="快速添加截止时间" placeholder="选择日期时间" />
+                  </label>
+                  <button type="submit" aria-label="添加任务">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                  </button>
+                </form>
+                <div class="todo-quick-preview" id="todo-quick-preview" hidden aria-live="polite"></div>
+                <div class="todo-data-toolbar">
+                  <button id="todo-backup-now" type="button">立即备份</button>
+                  <button id="todo-siri-import" type="button">Siri 导入</button>
+                  <button id="todo-export-report" type="button">导出报告</button>
+                  <button id="todo-export-data" type="button">导出备份</button>
+                  <button id="todo-import-data" type="button">导入备份</button>
+                </div>
+
+                <div class="todo-task-list" id="todo-task-list" role="list"></div>
+              </section>
+
+              <aside class="todo-detail todo-surface" id="todo-detail">
+                <div class="todo-detail-empty" id="todo-detail-empty">
+                  <span class="todo-empty-mark" aria-hidden="true">✓</span>
+                  <strong>选择一条任务查看详情</strong>
+                  <p>任务、备注、子任务和多段提醒都会保存在这里。</p>
+                </div>
+                <form class="todo-detail-form" id="todo-detail-form" hidden>
+                  <header class="todo-detail-head">
+                    <div>
+                      <span class="tile-label">任务详情</span>
+                      <small id="todo-detail-status">自动保存</small>
+                    </div>
+                    <div>
+                      <button class="todo-icon-button" id="todo-detail-desktop-card" type="button" aria-label="发送到桌面" title="发送到桌面">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="12" rx="2"/><path d="M8 20h8M12 16.5V20"/></svg>
+                      </button>
+                      <button class="todo-icon-button" id="todo-detail-export-report" type="button" aria-label="导出当前待办" title="导出当前待办">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M5 18v2h14v-2"/></svg>
+                      </button>
+                      <button class="todo-icon-button" id="todo-save-template" type="button" aria-label="保存为模板" title="保存为模板">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>
+                      </button>
+                      <button class="todo-icon-button" id="todo-detail-pin" type="button" aria-label="置顶任务" title="置顶任务">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 4 6 0-.8 5 3.8 3v2H6v-2l3.8-3L9 4Z"/><path d="M12 14v6"/></svg>
+                      </button>
+                      <button class="todo-icon-button" id="todo-detail-delete" type="button" aria-label="删除任务" title="删除任务">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2M7 7l1 12h10l1-12"/></svg>
+                      </button>
+                      <button class="todo-icon-button" id="todo-detail-close" type="button" aria-label="关闭详情" title="关闭详情">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+                      </button>
+                    </div>
+                  </header>
+                  <label class="todo-field todo-field-title">
+                    <span>任务名称</span>
+                    <input id="todo-detail-title" type="text" maxlength="120" autocomplete="off" />
+                  </label>
+                  <div class="todo-detail-grid">
+                    <label class="todo-field todo-field-status">
+                      <span>状态</span>
+                      <select id="todo-detail-state">
+                        <option value="todo">待办</option>
+                        <option value="in_progress">进行中</option>
+                        <option value="blocked">受阻</option>
+                        <option value="done">已完成</option>
+                      </select>
+                    </label>
+                    <label class="todo-field">
+                      <span>分类</span>
+                      <select id="todo-detail-list"></select>
+                    </label>
+                    <label class="todo-field">
+                      <span>优先级</span>
+                      <select id="todo-detail-priority">
+                        <option value="none">无</option>
+                        <option value="low">低</option>
+                        <option value="medium">中</option>
+                        <option value="high">高</option>
+                        <option value="urgent">紧急</option>
+                      </select>
+                    </label>
+                    <label class="todo-field">
+                      <span>开始时间</span>
+                      <input id="todo-detail-start" type="text" readonly data-todo-date-input placeholder="选择日期时间" />
+                    </label>
+                    <label class="todo-field">
+                      <span>截止时间</span>
+                      <input id="todo-detail-deadline" type="text" readonly data-todo-date-input placeholder="选择日期时间" />
+                    </label>
+                  </div>
+                  <label class="todo-field todo-field-notes">
+                    <span>备注</span>
+                    <textarea id="todo-detail-notes" rows="4" maxlength="12000" placeholder="补充上下文、链接或执行说明…"></textarea>
+                  </label>
+                  <section class="todo-block-summary" id="todo-block-summary" hidden>
+                    <div class="todo-block-summary-head">
+                      <div>
+                        <span>受阻记录</span>
+                        <strong id="todo-block-summary-type">受阻</strong>
+                      </div>
+                      <div>
+                        <button id="todo-block-edit" type="button">修改</button>
+                        <button id="todo-block-clear" type="button">解除受阻</button>
+                      </div>
+                    </div>
+                    <p id="todo-block-summary-reason"></p>
+                    <p class="todo-block-next" id="todo-block-summary-next"></p>
+                  </section>
+                  <div class="todo-activity">
+                    <button class="todo-activity-toggle" id="todo-activity-toggle" type="button" aria-expanded="false">
+                      <span>活动记录</span>
+                      <small id="todo-activity-preview">暂无记录</small>
+                      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
+                    </button>
+                    <div class="todo-activity-list" id="todo-activity-list" hidden></div>
+                  </div>
+
+                  <section class="todo-detail-section todo-repeat-section">
+                    <div class="todo-section-head">
+                      <div>
+                        <strong>重复</strong>
+                        <small>完成当前任务后自动生成下一次</small>
+                      </div>
+                    </div>
+                    <div class="todo-repeat-row">
+                      <select id="todo-detail-recurrence" aria-label="重复方式">
+                        <option value="">不重复</option>
+                        <option value="day">每天</option>
+                        <option value="weekday">每个工作日</option>
+                        <option value="week">每周</option>
+                        <option value="month">每月</option>
+                      </select>
+                      <span>每隔</span>
+                      <input id="todo-detail-recurrence-interval" type="number" min="1" max="365" value="1" aria-label="重复间隔" />
+                      <span id="todo-recurrence-unit">次</span>
+                    </div>
+                  </section>
+
+                  <section class="todo-detail-section">
+                    <div class="todo-section-head">
+                      <div>
+                        <strong>提醒</strong>
+                        <small>按截止时间提前提醒，可同时选择多个</small>
+                      </div>
+                      <select id="todo-detail-sound" aria-label="提示音">
+                        <option value="bright">清脆</option>
+                        <option value="soft">柔和</option>
+                        <option value="alert">强提醒</option>
+                        <option value="none">静音</option>
+                      </select>
+                    </div>
+                    <div class="todo-reminder-presets" id="todo-reminder-presets">
+                      <button type="button" data-reminder-offset="0">到期时</button>
+                      <button type="button" data-reminder-offset="1">提前 1 分钟</button>
+                      <button type="button" data-reminder-offset="10">提前 10 分钟</button>
+                      <button type="button" data-reminder-offset="60">提前 1 小时</button>
+                      <button type="button" data-reminder-offset="1440">提前 1 天</button>
+                    </div>
+                    <div class="todo-reminder-custom">
+                      <span>自定义提前</span>
+                      <input id="todo-reminder-minutes" type="number" min="1" max="525600" inputmode="numeric" placeholder="30" aria-label="自定义提前分钟数" />
+                      <span>分钟</span>
+                      <button id="todo-reminder-add" type="button">添加</button>
+                    </div>
+                    <p class="todo-reminder-hint" id="todo-reminder-hint">先设置截止时间，再添加提醒。</p>
+                    <label class="todo-strong-reminder-toggle">
+                      <span>
+                        <strong>强提醒</strong>
+                        <small>到时间后全屏弹出，最多回答 2 个问题</small>
+                      </span>
+                      <input id="todo-detail-strong-reminder" type="checkbox" />
+                      <i aria-hidden="true"></i>
+                    </label>
+                    <label class="todo-field todo-strong-reminder-time" id="todo-detail-strong-reminder-time-field" hidden>
+                      <span>强提醒时间</span>
+                      <input id="todo-detail-strong-reminder-at" type="text" readonly data-todo-date-input placeholder="选择强提醒时间" />
+                    </label>
+                  </section>
+
+                  <section class="todo-detail-section todo-subtasks-section">
+                    <div class="todo-section-head">
+                      <div>
+                        <strong>子任务</strong>
+                        <small id="todo-subtask-progress">0 / 0</small>
+                      </div>
+                    </div>
+                    <div class="todo-subtask-list" id="todo-subtask-list"></div>
+                    <div class="todo-subtask-add" id="todo-subtask-add">
+                      <input id="todo-subtask-title" type="text" maxlength="160" placeholder="添加子任务…" autocomplete="off" />
+                      <button id="todo-subtask-add-button" type="button" aria-label="添加子任务">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                      </button>
+                    </div>
+                  </section>
+                </form>
+              </aside>
+            </div>
+          </section>
+
+          <section id="tab-settings" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-settings" aria-hidden="true" inert>
+            <div class="settings-page" id="settings-page" aria-label="叮做设置">
+              <div class="settings-column settings-column-primary">
+                <section class="tile settings-card settings-appearance-card">
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">外观</span><strong>主题与显示</strong></div>
+                    <button class="workspace-button compact" id="settings-theme-reset" type="button">恢复默认</button>
+                  </div>
+                  <div class="settings-theme-section">
+                    <span>主题</span>
+                    <div class="settings-theme-grid" id="settings-theme-grid">
+                      <button type="button" data-theme-choice="system"><i data-swatch="system"></i><span>跟随系统</span></button>
+                      <button type="button" data-theme-choice="midnight"><i data-swatch="midnight"></i><span>Midnight</span></button>
+                      <button type="button" data-theme-choice="graphite"><i data-swatch="graphite"></i><span>Graphite</span></button>
+                      <button type="button" data-theme-choice="frost"><i data-swatch="frost"></i><span>Frost</span></button>
+                      <button type="button" data-theme-choice="ocean"><i data-swatch="ocean"></i><span>Ocean</span></button>
+                      <button type="button" data-theme-choice="forest"><i data-swatch="forest"></i><span>Forest</span></button>
+                    </div>
+                  </div>
+                  <div class="settings-theme-section">
+                    <span>强调色</span>
+                    <div class="settings-accent-grid" id="settings-accent-grid">
+                      <button type="button" data-accent-choice="blue" aria-label="蓝色"></button>
+                      <button type="button" data-accent-choice="green" aria-label="绿色"></button>
+                      <button type="button" data-accent-choice="orange" aria-label="橙色"></button>
+                      <button type="button" data-accent-choice="pink" aria-label="粉色"></button>
+                      <button type="button" data-accent-choice="purple" aria-label="紫色"></button>
+                      <button type="button" data-accent-choice="gray" aria-label="灰色"></button>
+                    </div>
+                  </div>
+                  <div class="settings-appearance-row">
+                    <label><span>密度</span><select id="settings-density"><option value="comfortable">舒适</option><option value="compact">紧凑</option></select></label>
+                    <label><span>字号</span><select id="settings-font-size"><option value="standard">标准</option><option value="large">较大</option></select></label>
+                    <label class="settings-inline-toggle"><span>减少动态效果</span><input id="settings-reduce-motion" type="checkbox" /><i></i></label>
+                  </div>
+                </section>
+
+                <section class="tile settings-card settings-api-card" hidden>
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">智能能力</span><strong>API 配置</strong></div>
+                    <button class="workspace-button compact" id="settings-api-configure" type="button">配置或替换</button>
+                  </div>
+                  <div class="settings-status-list">
+                    <div><span>通义百炼实时转写</span><small id="settings-transcription-status" data-state="empty">未配置</small></div>
+                    <div><span>DeepSeek 智能命名</span><small id="settings-llm-status" data-state="empty">未配置</small></div>
+                  </div>
+                  <p>密钥由系统安全存储加密，仅在你主动查看或复制时解密。</p>
+                </section>
+
+                <section class="tile settings-card settings-features-card" hidden>
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">工作区</span><strong>显示功能</strong></div>
+                    <small>首页与设置始终显示</small>
+                  </div>
+                  <div class="settings-feature-grid" id="settings-feature-list">
+                    <label><span><b>待办</b><small>分层任务与提醒</small></span><input type="checkbox" data-settings-feature="todo" aria-label="显示待办" /><i aria-hidden="true"></i></label>
+                    <label><span><b>笔记</b><small>随笔与资料库</small></span><input type="checkbox" data-settings-feature="notes" aria-label="显示笔记" /><i aria-hidden="true"></i></label>
+                    <label><span><b>链接</b><small>收藏与分组</small></span><input type="checkbox" data-settings-feature="links" aria-label="显示链接" /><i aria-hidden="true"></i></label>
+                    <label><span><b>录制</b><small>录音与转写</small></span><input type="checkbox" data-settings-feature="recordings" aria-label="显示录制" /><i aria-hidden="true"></i></label>
+                    <label><span><b>密钥</b><small>本机安全存储</small></span><input type="checkbox" data-settings-feature="credentials" aria-label="显示密钥" /><i aria-hidden="true"></i></label>
+                    <label><span><b>剪贴板</b><small>默认关闭</small></span><input type="checkbox" data-settings-feature="clip" aria-label="显示剪贴板" /><i aria-hidden="true"></i></label>
+                  </div>
+                </section>
+
+                <section class="tile settings-card settings-home-modules-card" hidden>
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">首页</span><strong>首页组件</strong></div>
+                    <small id="settings-home-module-status">隐藏后自动填充 · 至少保留一个</small>
+                  </div>
+                  <div class="settings-home-module-grid" id="settings-home-module-list">
+                    <label><span><b>音乐</b><small>播放状态与控制</small></span><input type="checkbox" data-settings-home-module="music" aria-label="显示音乐" /><i aria-hidden="true"></i></label>
+                    <label><span><b>番茄钟</b><small>专注计时</small></span><input type="checkbox" data-settings-home-module="pomodoro" aria-label="显示番茄钟" /><i aria-hidden="true"></i></label>
+                    <label><span><b>快速录音</b><small data-home-module-setting-note="recorder">录音与转写</small></span><input type="checkbox" data-settings-home-module="recorder" aria-label="显示快速录音" /><i aria-hidden="true"></i></label>
+                    <label><span><b>当前窗口</b><small>窗口快速切换</small></span><input type="checkbox" data-settings-home-module="windows" aria-label="显示当前窗口" /><i aria-hidden="true"></i></label>
+                    <label><span><b>镜子</b><small>相机与封面</small></span><input type="checkbox" data-settings-home-module="mirror" aria-label="显示镜子" /><i aria-hidden="true"></i></label>
+                    <label><span><b>随笔记</b><small>首页快速记录</small></span><input type="checkbox" data-settings-home-module="note" aria-label="显示随笔记" /><i aria-hidden="true"></i></label>
+                    <label><span><b>常用指令</b><small>提示词快捷入口</small></span><input type="checkbox" data-settings-home-module="commands" aria-label="显示常用指令" /><i aria-hidden="true"></i></label>
+                  </div>
+                </section>
+              </div>
+
+              <div class="settings-column settings-column-secondary">
+                <section class="tile settings-card settings-media-preferences-card">
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">首页媒体</span><strong>播放显示</strong></div>
+                  </div>
+                  <label class="settings-inline-toggle"><span>显示浏览器媒体</span><small>仅显示，不控制</small><input id="settings-browser-media" type="checkbox" /><i></i></label>
+                  <label class="settings-inline-toggle"><span>显示播放进度</span><input id="settings-show-progress" type="checkbox" /><i></i></label>
+                  <label class="settings-inline-toggle"><span>显示系统音量</span><input id="settings-show-volume" type="checkbox" /><i></i></label>
+                  <p class="settings-inline-note">Edge / Chrome 如需读取网页歌曲名称，请在浏览器的“视图 → 开发人员”中允许 Apple Events JavaScript。</p>
+                </section>
+
+                <section class="tile settings-card settings-notification-card">
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">待办</span><strong>提醒显示</strong></div>
+                  </div>
+                  <label class="settings-daily-review-time">
+                    <span>显示时长</span>
+                    <select id="settings-notification-duration" aria-label="提醒显示时长">
+                      <option value="3">3 秒</option>
+                      <option value="5">5 秒</option>
+                      <option value="10">10 秒</option>
+                      <option value="15">15 秒</option>
+                      <option value="30">30 秒</option>
+                      <option value="0">不自动收起</option>
+                    </select>
+                  </label>
+                  <small class="settings-inline-note" id="settings-notification-duration-note" role="status" aria-live="polite"></small>
+                </section>
+
+                <section class="tile settings-card settings-strong-reminder-card">
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">待办</span><strong>强提醒问题</strong></div>
+                    <button class="workspace-button compact" id="settings-strong-questions-reset" type="button">恢复默认</button>
+                  </div>
+                  <p>只修改问题内容；两步答案格式保持不变。</p>
+                  <div class="settings-strong-question-list" id="settings-strong-question-list">
+                    <label><span>问题 1</span><input id="settings-strong-question-0" type="text" maxlength="120" /></label>
+                    <label><span>问题 2</span><input id="settings-strong-question-1" type="text" maxlength="120" /></label>
+                  </div>
+                  <small class="settings-inline-note" id="settings-strong-questions-note" role="status" aria-live="polite"></small>
+                </section>
+
+                <section class="tile settings-card settings-daily-review-card">
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">待办</span><strong>每日收尾</strong></div>
+                  </div>
+                  <label class="settings-inline-toggle">
+                    <span>启用每日收尾</span>
+                    <small>到点总结当天完成、逾期和未完成情况</small>
+                    <input id="settings-daily-review-enabled" type="checkbox" />
+                    <i></i>
+                  </label>
+                  <label class="settings-daily-review-time">
+                    <span>收尾时间</span>
+                    <input id="settings-daily-review-time" type="text" inputmode="numeric" maxlength="5" placeholder="18:00" />
+                  </label>
+                  <small class="settings-inline-note" id="settings-daily-review-note" role="status" aria-live="polite"></small>
+                </section>
+
+                <section class="tile settings-card settings-mirror-card" hidden>
+                  <img id="settings-mirror-preview" src="assets/mirror-portrait.jpg" alt="当前首页镜子配图" draggable="false" />
+                  <div>
+                    <span class="tile-label">首页镜子</span>
+                    <strong>封面图片</strong>
+                    <p>支持 PNG、JPG、WebP 与 HEIC，替换后首页立即同步。</p>
+                    <button class="workspace-button compact" id="settings-mirror-choose" type="button">选择图片…</button>
+                  </div>
+                </section>
+
+                <section class="tile settings-card settings-device-card">
+                  <div class="settings-card-heading">
+                    <div><span class="tile-label">这台电脑</span><strong>本机与唤出</strong></div>
+                  </div>
+                  <div class="settings-device-row">
+                    <div><span>唤出快捷键</span><strong id="settings-shortcut-value">Space</strong></div>
+                    <button id="settings-shortcut-change" type="button">重新设置</button>
+                  </div>
+                  <label class="settings-device-row settings-default-tab-row">
+                    <div><span>默认展开页</span><strong>每次唤出面板时显示</strong></div>
+                    <select id="settings-default-tab" aria-label="默认展开页">
+                      <option value="home">首页</option>
+                      <option value="todo">待办</option>
+                      <option value="settings">设置</option>
+                    </select>
+                  </label>
+                  <div class="settings-device-row settings-workspace-row">
+                    <div><span>数据文件夹 · <em id="settings-workspace-kind">默认文件夹</em></span><strong id="settings-workspace-path">读取中…</strong></div>
+                    <span class="settings-device-actions">
+                      <button id="settings-workspace-open" type="button">打开文件夹</button>
+                      <button id="settings-workspace-choose" type="button">更换…</button>
+                    </span>
+                  </div>
+                  <label class="settings-device-row settings-auto-launch-row">
+                    <div><span>开机自动启动</span><strong>登录后自动运行叮做</strong></div>
+                    <input id="settings-auto-launch" type="checkbox" aria-label="开机自动启动" />
+                    <i aria-hidden="true"></i>
+                  </label>
+                  <p class="settings-inline-note" id="settings-inline-note" role="status" aria-live="polite"></p>
+                </section>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="todo-picker" id="todo-picker" hidden>
+          <header class="todo-picker-head">
+            <button id="todo-picker-previous" type="button" aria-label="上个月">‹</button>
+            <strong id="todo-picker-month"></strong>
+            <button id="todo-picker-next" type="button" aria-label="下个月">›</button>
+          </header>
+          <div class="todo-picker-week" aria-hidden="true">
+            <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+          </div>
+          <div class="todo-picker-grid" id="todo-picker-grid"></div>
+          <div class="todo-picker-time">
+            <span>时间</span>
+            <select id="todo-picker-hour" aria-label="小时"></select>
+            <b>:</b>
+            <select id="todo-picker-minute" aria-label="分钟"></select>
+          </div>
+          <footer class="todo-picker-actions">
+            <button id="todo-picker-clear" type="button">清除</button>
+            <button id="todo-picker-today" type="button">今天</button>
+            <button id="todo-picker-done" type="button">完成</button>
+          </footer>
+        </div>
+        <div class="todo-calendar-day-popover" id="todo-calendar-day-popover" hidden>
+          <header>
+            <strong id="todo-calendar-day-title">当天任务</strong>
+            <button id="todo-calendar-day-close" type="button" aria-label="关闭">×</button>
+          </header>
+          <div id="todo-calendar-day-list"></div>
+        </div>
+        <div class="todo-template-dialog-backdrop" id="todo-template-dialog" hidden>
+          <form class="todo-template-dialog" id="todo-template-form">
+            <header>
+              <div>
+                <strong>保存为模板</strong>
+                <span>保留分类、备注、优先级、子任务和提醒结构</span>
+              </div>
+              <button id="todo-template-cancel" type="button" aria-label="取消">×</button>
+            </header>
+            <label>
+              <span>模板名称</span>
+              <input id="todo-template-name" type="text" maxlength="48" placeholder="例如：新客户入驻" autocomplete="off" />
+            </label>
+            <footer>
+              <button id="todo-template-cancel-button" type="button">取消</button>
+              <button type="submit">保存模板</button>
+            </footer>
+          </form>
+        </div>
+        <div class="todo-block-dialog-backdrop" id="todo-block-dialog" hidden>
+          <form class="todo-block-dialog" id="todo-block-form">
+            <header>
+              <div>
+                <strong>记录受阻原因</strong>
+                <span>说明为什么暂时无法推进，以及下一步怎么处理</span>
+              </div>
+              <button id="todo-block-cancel" type="button" aria-label="取消">×</button>
+            </header>
+            <div class="todo-block-reason-grid" id="todo-block-reason-options">
+              <button type="button" data-block-reason="waiting">等待别人</button>
+              <button type="button" data-block-reason="materials">资料不足</button>
+              <button type="button" data-block-reason="time">时间不够</button>
+              <button type="button" data-block-reason="conditions">条件未满足</button>
+              <button type="button" data-block-reason="changed">计划变化</button>
+              <button type="button" data-block-reason="personal">个人原因</button>
+              <button type="button" data-block-reason="other">其他</button>
+            </div>
+            <label class="todo-block-field">
+              <span>具体说明</span>
+              <textarea id="todo-block-reason" maxlength="2000" rows="4" placeholder="例如：客户负责人今天请假，签字文件暂时拿不到。" required></textarea>
+            </label>
+            <label class="todo-block-field">
+              <span>下一步计划</span>
+              <textarea id="todo-block-next-action" maxlength="1200" rows="3" placeholder="例如：明天上午十点联系客户行政人员。"></textarea>
+            </label>
+            <p class="todo-block-dialog-error" id="todo-block-dialog-error" hidden></p>
+            <footer>
+              <button id="todo-block-cancel-button" type="button">取消</button>
+              <button type="submit">保存受阻记录</button>
+            </footer>
+          </form>
+        </div>
+        <div class="todo-export-dialog-backdrop" id="todo-export-dialog" hidden>
+          <form class="todo-export-dialog" id="todo-export-form">
+            <header>
+              <div>
+                <strong>导出待办报告</strong>
+                <span>生成文字加表格的 Word 或 PDF 文件</span>
+              </div>
+              <button id="todo-export-cancel" type="button" aria-label="取消">×</button>
+            </header>
+            <div class="todo-export-grid">
+              <label>
+                <span>导出范围</span>
+                <select id="todo-export-scope">
+                  <option value="task">当前待办</option>
+                  <option value="list">当前名录及子名录</option>
+                </select>
+              </label>
+              <label>
+                <span>文件格式</span>
+                <select id="todo-export-format">
+                  <option value="pdf">PDF 文档</option>
+                  <option value="docx">Word 文档</option>
+                </select>
+              </label>
+            </div>
+            <label class="todo-export-toggle">
+              <span><b>包含已完成</b><small>关闭后只导出未完成和受阻任务</small></span>
+              <input id="todo-export-include-completed" type="checkbox" checked />
+              <i aria-hidden="true"></i>
+            </label>
+            <label class="todo-export-toggle">
+              <span><b>包含活动记录</b><small>文档会更完整，但页数也会增加</small></span>
+              <input id="todo-export-include-activity" type="checkbox" />
+              <i aria-hidden="true"></i>
+            </label>
+            <p class="todo-export-note" id="todo-export-note"></p>
+            <footer>
+              <button id="todo-export-cancel-button" type="button">取消</button>
+              <button type="submit">选择位置并导出</button>
+            </footer>
+          </form>
+        </div>
+        <div class="siri-import-backdrop" id="siri-import-dialog" hidden>
+          <form class="siri-import-dialog" id="siri-import-form">
+            <header>
+              <div>
+                <strong>从 Siri 导入待办</strong>
+                <span>读取系统“提醒事项”中的未完成任务，只做单向导入</span>
+              </div>
+              <button id="siri-import-close" type="button" aria-label="关闭">×</button>
+            </header>
+            <label>
+              <span>提醒事项列表</span>
+              <select id="siri-import-reminder-list"></select>
+            </label>
+            <label>
+              <span>导入到分类</span>
+              <select id="siri-import-target-list"></select>
+            </label>
+            <label class="siri-import-toggle">
+              <span><b>自动检查</b><small>应用运行时每 15 秒检查一次</small></span>
+              <input id="siri-import-auto" type="checkbox" />
+              <i aria-hidden="true"></i>
+            </label>
+            <p class="siri-import-note" id="siri-import-note">首次使用需要允许叮做访问提醒事项。</p>
+            <footer>
+              <button id="siri-import-cancel" type="button">取消</button>
+              <button class="primary" type="submit">保存并立即导入</button>
+            </footer>
+          </form>
+        </div>
+        <div class="daily-review-backdrop" id="daily-review-backdrop" hidden>
+          <section class="daily-review-dialog" role="dialog" aria-modal="true" aria-labelledby="daily-review-title">
+            <header>
+              <div>
+                <span>待办收尾</span>
+                <h2 id="daily-review-title">今天的执行情况</h2>
+              </div>
+              <button id="daily-review-close" type="button" aria-label="关闭">×</button>
+            </header>
+            <div class="daily-review-summary" id="daily-review-summary"></div>
+            <div class="daily-review-tasks" id="daily-review-tasks"></div>
+            <footer>
+              <button id="daily-review-all-tomorrow" type="button">全部顺延一天</button>
+              <button id="daily-review-all-morning" type="button">全部明天 09:00</button>
+              <button id="daily-review-done" type="button">完成</button>
+            </footer>
+            <input class="daily-review-custom-input" id="daily-review-custom-at" type="text" readonly data-todo-date-input aria-hidden="true" />
+          </section>
+        </div>
+        <div class="strong-reminder-warning-backdrop" id="strong-reminder-warning" hidden>
+          <section class="strong-reminder-warning" role="alertdialog" aria-modal="true" aria-labelledby="strong-reminder-warning-title">
+            <div class="strong-reminder-warning-step" id="strong-reminder-warning-step">
+              <span class="strong-reminder-warning-mark" aria-hidden="true">!</span>
+              <h2 id="strong-reminder-warning-title">强提醒会强制打断你</h2>
+              <p>开启后，到时间会在屏幕中央弹出，并且不能点击外部、按 Esc 或直接关闭。</p>
+              <ul>
+                <li>未完成时可选择截止时间、新的强提醒时间，或停止提醒</li>
+                <li>可能打断会议、演示、直播或正在进行的专注工作</li>
+                <li>非特别重要、非特别紧急，或不一定去做的事情，尽量不要开启</li>
+              </ul>
+              <div class="strong-reminder-warning-actions">
+                <button id="strong-reminder-warning-cancel" type="button">取消</button>
+                <button id="strong-reminder-warning-confirm" type="button">下一步，设置强提醒时间</button>
+              </div>
+            </div>
+            <div class="strong-reminder-warning-step" id="strong-reminder-time-step" hidden>
+              <span class="strong-reminder-warning-time-mark" aria-hidden="true">时</span>
+              <h2 id="strong-reminder-time-title">选择强提醒时间</h2>
+              <p>强提醒不能晚于任务截止时间。“跟任务时间一样”会跟随截止时间自动调整。</p>
+              <div class="strong-reminder-time-options" id="strong-reminder-time-options">
+                <button type="button" data-strong-reminder-time="same">跟任务时间一样</button>
+                <button type="button" data-strong-reminder-time="10">提前 10 分钟</button>
+                <button type="button" data-strong-reminder-time="30">提前 30 分钟</button>
+                <button type="button" data-strong-reminder-time="60">提前 1 小时</button>
+                <button type="button" data-strong-reminder-time="custom">自定义时间</button>
+              </div>
+              <label class="strong-reminder-time-custom" id="strong-reminder-time-custom-field" hidden>
+                <span>自定义强提醒时间</span>
+                <input id="strong-reminder-custom-at" type="text" readonly data-todo-date-input placeholder="选择强提醒时间" />
+              </label>
+              <p class="strong-reminder-time-error" id="strong-reminder-time-error" hidden></p>
+              <div class="strong-reminder-warning-actions">
+                <button id="strong-reminder-time-cancel" type="button">取消</button>
+                <button id="strong-reminder-time-confirm" type="button">确认开启强提醒</button>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="transcription-settings-backdrop" id="transcription-settings-backdrop" hidden>
+          <section class="transcription-settings-card" role="dialog" aria-modal="true" aria-labelledby="transcription-settings-title">
+            <div class="transcription-settings-head">
+              <div>
+                <strong id="transcription-settings-title">API 配置</strong>
+                <span>实时转写与智能命名 · 密钥仅加密保存在本机</span>
+              </div>
+              <button id="transcription-settings-close" type="button" aria-label="关闭转写设置">×</button>
+            </div>
+            <div class="transcription-field api-key-field">
+              <div class="api-field-heading">
+                <label for="transcription-api-key">通义百炼实时转写 API Key</label>
+                <small id="transcription-api-status" data-state="empty">未配置</small>
+              </div>
+              <input id="transcription-api-key" type="password" placeholder="sk-…（已配置时留空即可）" autocomplete="off" spellcheck="false" />
+              <button class="api-key-help" id="transcription-api-help" type="button">前往阿里云百炼创建或管理 API Key <span aria-hidden="true">↗</span></button>
+            </div>
+            <div class="transcription-fields-row">
+              <label class="transcription-field">
+                <span>地域</span>
+                <select id="transcription-region">
+                  <option value="beijing">华北 2（北京）</option>
+                  <option value="singapore">新加坡</option>
+                </select>
+              </label>
+              <label class="transcription-field">
+                <span>Workspace ID（可选）</span>
+                <input id="transcription-workspace" type="text" placeholder="业务空间 ID" autocomplete="off" spellcheck="false" />
+              </label>
+            </div>
+            <div class="api-settings-divider"><span>智能命名与分组</span><small>OpenAI-compatible</small></div>
+            <div class="transcription-field api-key-field">
+              <div class="api-field-heading">
+                <label for="llm-api-key">DeepSeek API Key</label>
+                <small id="llm-api-status" data-state="empty">未配置</small>
+              </div>
+              <input id="llm-api-key" type="password" placeholder="已配置时留空即可" autocomplete="off" spellcheck="false" />
+              <button class="api-key-help" id="llm-api-help" type="button">前往 DeepSeek 创建或管理 API Key <span aria-hidden="true">↗</span></button>
+            </div>
+            <div class="transcription-fields-row llm-fields-row">
+              <label class="transcription-field">
+                <span>Base URL</span>
+                <input id="llm-base-url" type="url" placeholder="https://…/v1" autocomplete="off" spellcheck="false" />
+              </label>
+              <label class="transcription-field">
+                <span>模型</span>
+                <input id="llm-model" type="text" placeholder="deepseek-v4-flash" autocomplete="off" spellcheck="false" />
+              </label>
+            </div>
+            <p class="transcription-settings-note" id="transcription-settings-note">API Key 会由系统安全存储加密，渲染页面无法读取。</p>
+            <div class="transcription-settings-actions">
+              <button class="workspace-button compact" id="transcription-settings-cancel" type="button">取消</button>
+              <button class="workspace-button compact primary" id="transcription-settings-save" type="button">保存</button>
+            </div>
+          </section>
+        </div>
+        <div class="status-toast" id="status-toast" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true" hidden>
+          <span id="status-toast-message"></span>
+          <button id="status-toast-action" type="button" hidden>撤销</button>
+        </div>
+      </div>
+    </div>
+    <script src="../platform.js"></script>
+    <script src="domain.js"></script>
+    <script src="theme.js"></script>
+    <script src="effects.js"></script>
+    <script src="app.js"></script>
+    <script src="todo.js"></script>
+    <script src="workspace.js"></script>
+    <script src="icon-motion.js"></script>
+  </body>
+</html>
