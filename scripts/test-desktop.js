@@ -21,7 +21,7 @@ fs.writeFileSync(env.TODO_TEST_LOG, '');
 // notch-focus predates the removal of the legacy panels and still targets
 // credentials/recordings controls that no longer exist. Keep it as historical
 // coverage; the current renderer smoke tests below cover the shipped surfaces.
-for (const file of ['retained-workspace', 'collapsed-visuals', 'strong-reminder', 'todo-block', 'todo-snooze-main', 'desktop-card', 'desktop-card-main', 'siri-import-main', 'report-export', 'startup']) {
+for (const file of ['retained-workspace', 'collapsed-visuals', 'peek-expand-main', 'strong-reminder', 'todo-block', 'todo-export-selection', 'todo-attachments', 'todo-snooze-main', 'desktop-card', 'desktop-card-main', 'siri-import-main', 'report-export', 'startup']) {
   // These renderer-only checks depend on interactive compositor and
   // contextBridge behavior that GitHub's headless runners do not provide
   // consistently. They remain part of the local full test suite.

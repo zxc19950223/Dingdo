@@ -135,11 +135,11 @@
   --d-fast: 140ms; /* hover/颜色/边框主时长（原 180ms），对齐 Linear 0.16s */
   --d-base: 180ms; /* 内容态过渡（原 240ms） */
   --d-slow: 260ms; /* 原 320ms */
-  --d-grand: 340ms;
-  --d-island-close: 280ms;
-  --d-island-close-delay: 60ms;
-  --d-island-shell-fade: 80ms;
-  --d-island-shell-fade-delay: 260ms;
+  --d-grand: 260ms;
+  --d-island-close: 220ms;
+  --d-island-close-delay: 40ms;
+  --d-island-shell-fade: 70ms;
+  --d-island-shell-fade-delay: 200ms;
   --island-half-width: 100px;
   --notch-width: 280px;
   --notch-inset: 8px;
@@ -347,14 +347,14 @@ body {
 #app.expanded .panel > .topbar,
 #app.expanded .panel > .panels {
   opacity: 1;
-  transition: opacity var(--d-base) var(--ease-out) 110ms;
+  transition: opacity var(--d-base) var(--ease-out) 90ms;
 }
 
 /* 收起先退内容，再让岛体的宽、高同步向屏幕顶部中心收拢。 */
 #app.closing .notch {
   height: var(--notch-h, 38px);
   padding: 0;
-  background: var(--bg-base);
+  background: #0b0c0f;
   pointer-events: none;
   border-radius: 0 0 var(--r-notch) var(--r-notch);
 }
@@ -378,6 +378,19 @@ body {
 #app.closing .panel > .panels {
   opacity: 0;
   transition: opacity var(--d-fast) var(--ease-out);
+}
+
+/* 岛体变形只保留一层需要合成的内容；彩色描边和额外滤镜留到动作结束后再出现。 */
+#app.opening .panel::before,
+#app.closing .panel::before {
+  will-change: clip-path, opacity;
+  backface-visibility: hidden;
+}
+
+#app.opening.expanded .panel::after,
+#app.closing .panel::after {
+  opacity: 0;
+  transition: none;
 }
 
 /* ============ 顶栏 ============ */
@@ -2687,7 +2700,6 @@ body {
 
 #app.expanded .panel::after {
   opacity: 0.46;
-  transition-delay: 200ms;
 }
 
 #app.closing .panel::after {
@@ -7168,6 +7180,10 @@ html[data-theme='frost'] .settings-card {
   color: var(--text-1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
 }
+html[data-theme='frost'] .panel {
+  background: transparent !important;
+  box-shadow: none;
+}
 html[data-theme='frost'] input,
 html[data-theme='frost'] textarea,
 html[data-theme='frost'] select,
@@ -9179,4 +9195,297 @@ html[data-reduce-motion='true'] .todo-task-row.is-unhandled {
 .siri-import-dialog footer button.primary {
   background: color-mix(in srgb, var(--focus-ring) 18%, transparent);
   color: var(--todo-accent-text);
+}
+
+/* ============ 待办附件与链接 ============ */
+.todo-attachments-section {
+  gap: 8px;
+}
+
+.todo-attachment-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.todo-attachment-actions button,
+.todo-attachment-link-editor button,
+.todo-attachment-item-actions button {
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--todo-control-border);
+  border-radius: 8px;
+  background: var(--todo-control-bg);
+  color: var(--todo-text-secondary);
+  font: inherit;
+  font-size: 8.5px;
+  cursor: pointer;
+}
+
+.todo-attachment-actions button:hover,
+.todo-attachment-link-editor button:hover,
+.todo-attachment-item-actions button:hover {
+  color: var(--text-1);
+  background: var(--todo-row-hover);
+}
+
+.todo-attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.todo-attachment-empty {
+  padding: 9px;
+  border: 1px dashed var(--todo-border-soft);
+  border-radius: 9px;
+  color: var(--todo-text-muted);
+  font-size: 8.5px;
+  text-align: center;
+}
+
+.todo-attachment-item {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 7px;
+  border: 1px solid var(--todo-border-soft);
+  border-radius: 9px;
+  background: var(--todo-control-bg);
+}
+
+.todo-attachment-item[data-missing='true'] {
+  border-color: color-mix(in srgb, var(--todo-danger) 42%, var(--todo-border-soft));
+}
+
+.todo-attachment-mark {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--focus-ring) 12%, var(--todo-control-bg));
+  color: var(--todo-accent-text);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.todo-attachment-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.todo-attachment-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.todo-attachment-copy strong,
+.todo-attachment-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.todo-attachment-copy strong {
+  color: var(--text-1);
+  font-size: 9px;
+  font-weight: 620;
+}
+
+.todo-attachment-copy small {
+  color: var(--todo-text-muted);
+  font-size: 8px;
+}
+
+.todo-attachment-item[data-missing='true'] .todo-attachment-copy small {
+  color: var(--todo-danger-text);
+}
+
+.todo-attachment-item-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.todo-attachment-link-editor {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) auto;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid var(--todo-control-border);
+  border-radius: 9px;
+  background: var(--todo-control-bg);
+}
+
+.todo-attachment-link-editor[hidden] {
+  display: none;
+}
+
+.todo-attachment-link-editor input {
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--todo-control-border);
+  border-radius: 8px;
+  outline: none;
+  background: var(--todo-surface-raised);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 8.5px;
+}
+
+.todo-attachment-link-editor input:focus {
+  border-color: color-mix(in srgb, var(--focus-ring) 42%, var(--todo-control-border));
+}
+
+.todo-attachment-link-editor > div {
+  display: flex;
+  gap: 4px;
+}
+
+.todo-attachment-note {
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--focus-ring) 7%, transparent);
+  color: var(--todo-text-muted);
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+/* ============ 导出报告选择 ============ */
+.todo-export-selection {
+  margin-top: 10px;
+  padding: 9px;
+  border: 1px solid var(--todo-control-border);
+  border-radius: 10px;
+  background: var(--todo-control-bg);
+}
+
+.todo-export-selection[hidden] {
+  display: none;
+}
+
+.todo-export-selection > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.todo-export-selection > header > div:first-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.todo-export-selection > header strong {
+  color: var(--text-1);
+  font-size: 9px;
+}
+
+.todo-export-selection > header small {
+  color: var(--todo-text-muted);
+  font-size: 8px;
+}
+
+.todo-export-selection > header > div:last-child {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.todo-export-selection > header button {
+  min-height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--todo-control-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--todo-text-secondary);
+  font: inherit;
+  font-size: 8px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.todo-export-selection > header button:hover {
+  color: var(--text-1);
+  background: var(--todo-row-hover);
+}
+
+.todo-export-task-list {
+  max-height: 190px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.todo-export-task-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 5px;
+  border-bottom: 1px solid var(--todo-border-soft);
+  color: var(--todo-text-secondary);
+  font-size: 8.5px;
+}
+
+.todo-export-task-row:last-child {
+  border-bottom: 0;
+}
+
+.todo-export-task-row[hidden] {
+  display: none;
+}
+
+.todo-export-task-row input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--focus-ring);
+}
+
+.todo-export-task-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.todo-export-task-main strong,
+.todo-export-task-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.todo-export-task-main strong {
+  color: var(--text-1);
+  font-size: 8.5px;
+  font-weight: 600;
+}
+
+.todo-export-task-main small {
+  color: var(--todo-text-muted);
+  font-size: 7.5px;
+}
+
+.todo-export-task-row time {
+  color: var(--todo-text-muted);
+  font-size: 7.5px;
+  white-space: nowrap;
 }

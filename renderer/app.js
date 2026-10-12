@@ -472,7 +472,7 @@ function nextAnimationFrame() {
   return new Promise((resolve) => requestAnimationFrame(resolve));
 }
 
-function waitForPanelMotion() {
+function waitForPanelMotion(propertyName = 'opacity') {
   return new Promise((resolve) => {
     let settled = false;
     const finish = () => {
@@ -485,7 +485,7 @@ function waitForPanelMotion() {
     const onEnd = (event) => {
       if (
         event.target === panel &&
-        event.propertyName === 'opacity' &&
+        event.propertyName === propertyName &&
         event.pseudoElement === '::before'
       ) {
         finish();
@@ -569,8 +569,10 @@ async function setMode(expanded) {
       await ipcSetMode('expanded');
       await nextAnimationFrame();
       await nextAnimationFrame();
-      app.classList.remove('opening');
+      const motion = waitForPanelMotion('clip-path');
       app.classList.add('expanded');
+      app.classList.remove('opening');
+      await motion;
       // 展开后面板从隐藏变为可见，tab 尺寸此时才可量，校准激活胶囊位置
       requestAnimationFrame(() => requestAnimationFrame(positionIndicator));
       setTimeout(() => {

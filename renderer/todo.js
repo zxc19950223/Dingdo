@@ -154,6 +154,15 @@
   const activityToggle = document.getElementById('todo-activity-toggle');
   const activityPreview = document.getElementById('todo-activity-preview');
   const activityList = document.getElementById('todo-activity-list');
+  const attachmentProgress = document.getElementById('todo-attachment-progress');
+  const attachmentList = document.getElementById('todo-attachment-list');
+  const attachmentAddFile = document.getElementById('todo-attachment-add-file');
+  const attachmentAddLink = document.getElementById('todo-attachment-add-link');
+  const attachmentLinkForm = document.getElementById('todo-attachment-link-form');
+  const attachmentLinkName = document.getElementById('todo-attachment-link-name');
+  const attachmentLinkUrl = document.getElementById('todo-attachment-link-url');
+  const attachmentLinkCancel = document.getElementById('todo-attachment-link-cancel');
+  const attachmentLinkSubmit = document.getElementById('todo-attachment-link-submit');
   const blockDialog = document.getElementById('todo-block-dialog');
   const blockForm = document.getElementById('todo-block-form');
   const blockReasonOptions = document.getElementById('todo-block-reason-options');
@@ -168,6 +177,9 @@
   const exportFormat = document.getElementById('todo-export-format');
   const exportIncludeCompleted = document.getElementById('todo-export-include-completed');
   const exportIncludeActivity = document.getElementById('todo-export-include-activity');
+  const exportSelection = document.getElementById('todo-export-selection');
+  const exportSelectionCount = document.getElementById('todo-export-selection-count');
+  const exportTaskList = document.getElementById('todo-export-task-list');
   const exportNote = document.getElementById('todo-export-note');
   const exportCancel = document.getElementById('todo-export-cancel');
   const exportCancelButton = document.getElementById('todo-export-cancel-button');
@@ -553,6 +565,10 @@
   let dailyReviewCustomTaskId = '';
   let blockDialogTaskId = '';
   let blockDraftReasonType = '';
+  let exportSelectionIds = new Set();
+  let exportCandidateIds = new Set();
+  let attachmentInspectionToken = 0;
+  const attachmentPreviewCache = new Map();
   let desktopCardIds = new Set();
   let desktopCardsLoaded = false;
   let desktopCardsSyncTimer = null;
@@ -1464,6 +1480,274 @@
       : '<div class="todo-subtask-empty">还没有活动记录</div>';
   }
 
+  function formatAttachmentSize(value) {
+    const size = Math.max(0, Number(value) || 0);
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(size < 10 * 1024 ? 1 : 0)} KB`;
+    if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  }
+
+  function attachmentExtension(name) {
+    const match = String(name || '').match(/\.([a-z0-9]{1,5})$/i);
+    return match ? match[1].toUpperCase() : 'FILE';
+  }
+
+  function attachmentHostname(url) {
+    try {
+      return new URL(String(url || '')).hostname.replace(/^www\./, '');
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function attachmentMetadata(attachment) {
+    if (attachment.kind !== 'file') return null;
+    return attachmentPreviewCache.get(attachment.path) || null;
+  }
+
+  function attachmentHtml(task, attachment) {
+    const metadata = attachmentMetadata(attachment);
+    const isLink = attachment.kind === 'link';
+    const missing = !isLink && metadata?.exists === false;
+    const mark = isLink
+      ? '<span class="todo-attachment-mark">URL</span>'
+      : metadata?.previewUrl
+        ? `<span class="todo-attachment-mark"><img src="${escapeHtml(metadata.previewUrl)}" alt="" /></span>`
+        : `<span class="todo-attachment-mark">${escapeHtml(attachmentExtension(attachment.name))}</span>`;
+    const detailText = isLink
+      ? attachmentHostname(attachment.url) || attachment.url
+      : missing
+        ? '文件已移动或删除'
+        : `本地文件 · ${formatAttachmentSize(metadata?.size ?? attachment.size)}`;
+    return `
+      <div class="todo-attachment-item" data-attachment-id="${escapeHtml(attachment.id)}" data-missing="${missing}">
+        ${mark}
+        <div class="todo-attachment-copy">
+          <strong title="${escapeHtml(attachment.name)}">${escapeHtml(attachment.name)}</strong>
+          <small title="${escapeHtml(detailText)}">${escapeHtml(detailText)}</small>
+        </div>
+        <div class="todo-attachment-item-actions">
+          ${missing
+            ? `<button type="button" data-attachment-action="relink" data-attachment-id="${escapeHtml(attachment.id)}">重新定位</button>`
+            : `<button type="button" data-attachment-action="open" data-attachment-id="${escapeHtml(attachment.id)}">打开</button>`}
+          <button type="button" data-attachment-action="remove" data-attachment-id="${escapeHtml(attachment.id)}" aria-label="移除${escapeHtml(attachment.name)}">移除</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderAttachments(task, inspect = true) {
+    if (!attachmentList || !attachmentProgress) return;
+    const attachments = task?.attachments || [];
+    attachmentProgress.textContent = attachments.length ? `${attachments.length} 项` : '0 项';
+    attachmentList.innerHTML = attachments.length
+      ? attachments.map((attachment) => attachmentHtml(task, attachment)).join('')
+      : '<div class="todo-attachment-empty">还没有附件或链接，可以添加文件或网址。</div>';
+    if (inspect && attachments.some((attachment) => attachment.kind === 'file')) {
+      void inspectTaskAttachments(task.id);
+    }
+  }
+
+  async function inspectTaskAttachments(taskId) {
+    const task = findTask(taskId);
+    if (!task || typeof window.notchAPI?.describeTodoAttachments !== 'function') return;
+    const paths = (task.attachments || [])
+      .filter((attachment) => attachment.kind === 'file')
+      .map((attachment) => attachment.path);
+    if (!paths.length) return;
+    const token = ++attachmentInspectionToken;
+    const result = await window.notchAPI.describeTodoAttachments(paths).catch(() => null);
+    if (!result?.ok || token !== attachmentInspectionToken) return;
+    (result.items || []).forEach((item) => {
+      if (item?.path) {
+        attachmentPreviewCache.set(item.path, {
+          exists: item.exists !== false,
+          size: Math.max(0, Number(item.size) || 0),
+          previewUrl: String(item.previewUrl || ''),
+        });
+      }
+    });
+    if (selectedTaskId !== taskId || detailForm?.hidden) return;
+    const current = findTask(taskId);
+    if (current) renderAttachments(current, false);
+  }
+
+  function storeTaskAttachments(taskId, attachments, activityType, message) {
+    const task = findTask(taskId);
+    if (!task) return false;
+    const next = Domain.updateDetailedTodo(
+      task,
+      { attachments },
+      workspace.lists,
+      Date.now()
+    );
+    if (!next) return false;
+    next.activity = appendActivity(next, activityType, message);
+    if (!replaceTask(next, { scheduleReminders: false })) return false;
+    renderAll();
+    return true;
+  }
+
+  async function addAttachmentPaths(paths) {
+    const task = findTask(selectedTaskId);
+    if (!task || typeof window.notchAPI?.describeTodoAttachments !== 'function') return 0;
+    const existingPaths = new Set(
+      (task.attachments || [])
+        .filter((attachment) => attachment.kind === 'file')
+        .map((attachment) => attachment.path)
+    );
+    const result = await window.notchAPI.describeTodoAttachments(paths).catch(() => null);
+    const items = (result?.items || []).filter((item) => item?.exists !== false && !existingPaths.has(item.path));
+    if (!items.length) {
+      showToast(result?.items?.length ? '文件已存在或无法读取' : '没有可添加的文件');
+      return 0;
+    }
+    const capacity = Math.max(0, 50 - (task.attachments || []).length);
+    const accepted = items.slice(0, capacity);
+    if (!accepted.length) {
+      showToast('每条待办最多添加 50 个附件与链接');
+      return 0;
+    }
+    const attachments = [
+      ...(task.attachments || []),
+      ...accepted.map((item) => ({
+        id: generateId('attachment-file'),
+        kind: 'file',
+        name: item.name,
+        path: item.path,
+        size: Math.max(0, Number(item.size) || 0),
+        addedAt: new Date().toISOString(),
+      })),
+    ];
+    accepted.forEach((item) => {
+      attachmentPreviewCache.set(item.path, {
+        exists: true,
+        size: Math.max(0, Number(item.size) || 0),
+        previewUrl: String(item.previewUrl || ''),
+      });
+    });
+    storeTaskAttachments(
+      task.id,
+      attachments,
+      'attachment_added',
+      `添加附件：${accepted.map((item) => item.name).join('、')}`
+    );
+    showToast(accepted.length > 1 ? `已添加 ${accepted.length} 个附件` : `已添加附件：${accepted[0].name}`);
+    return accepted.length;
+  }
+
+  async function chooseAttachments() {
+    if (!findTask(selectedTaskId) || typeof window.notchAPI?.chooseTodoAttachments !== 'function') return;
+    const result = await window.notchAPI.chooseTodoAttachments().catch(() => null);
+    if (!result?.ok || result.canceled) return;
+    const items = (result.items || []).filter((item) => item.exists !== false);
+    if (!items.length) {
+      showToast('没有可添加的文件');
+      return;
+    }
+    await addAttachmentPaths(items.map((item) => item.path));
+  }
+
+  function removeAttachment(attachmentId) {
+    const task = findTask(selectedTaskId);
+    const attachment = task?.attachments?.find((item) => item.id === attachmentId);
+    if (!task || !attachment) return;
+    const attachments = (task.attachments || []).filter((item) => item.id !== attachmentId);
+    storeTaskAttachments(
+      task.id,
+      attachments,
+      'attachment_removed',
+      `${attachment.kind === 'link' ? '移除链接' : '移除附件'}：${attachment.name}`
+    );
+    if (attachment.kind === 'file') attachmentPreviewCache.delete(attachment.path);
+    showToast(`${attachment.kind === 'link' ? '链接' : '附件'}已移除`);
+  }
+
+  async function relinkAttachment(attachmentId) {
+    const task = findTask(selectedTaskId);
+    const attachment = task?.attachments?.find((item) => item.id === attachmentId);
+    if (!task || !attachment || attachment.kind !== 'file') return;
+    if (typeof window.notchAPI?.chooseTodoAttachments !== 'function') return;
+    const result = await window.notchAPI.chooseTodoAttachments().catch(() => null);
+    if (!result?.ok || result.canceled) return;
+    const item = (result.items || []).find((entry) => entry.exists !== false);
+    if (!item) return;
+    const attachments = (task.attachments || []).map((entry) => (
+      entry.id === attachmentId
+        ? {
+          ...entry,
+          name: item.name,
+          path: item.path,
+          size: Math.max(0, Number(item.size) || 0),
+          addedAt: entry.addedAt,
+        }
+        : entry
+    ));
+    attachmentPreviewCache.delete(attachment.path);
+    attachmentPreviewCache.set(item.path, {
+      exists: true,
+      size: Math.max(0, Number(item.size) || 0),
+      previewUrl: String(item.previewUrl || ''),
+    });
+    storeTaskAttachments(
+      task.id,
+      attachments,
+      'attachment_relinked',
+      `重新定位附件：${attachment.name} → ${item.name}`
+    );
+    showToast('附件位置已更新');
+  }
+
+  function openAttachment(attachmentId) {
+    const task = findTask(selectedTaskId);
+    const attachment = task?.attachments?.find((item) => item.id === attachmentId);
+    if (!attachment) return;
+    if (attachment.kind === 'link') {
+      window.notchAPI?.openExternal?.(attachment.url);
+      return;
+    }
+    window.notchAPI?.openPath?.(attachment.path).then((message) => {
+      if (typeof message === 'string' && message) {
+        attachmentPreviewCache.set(attachment.path, { ...attachmentMetadata(attachment), exists: false });
+        renderAttachments(findTask(task.id), false);
+        showToast('文件已移动或删除，请重新定位');
+      }
+    }).catch(() => {});
+  }
+
+  function addAttachmentLink() {
+    const task = findTask(selectedTaskId);
+    const url = Domain.normalizeHttpUrl(attachmentLinkUrl?.value);
+    if (!task || !url) {
+      showToast('请输入有效的 HTTP 或 HTTPS 链接');
+      attachmentLinkUrl?.focus({ preventScroll: true });
+      return;
+    }
+    if ((task.attachments || []).length >= 50) {
+      showToast('每条待办最多添加 50 个附件与链接');
+      return;
+    }
+    const name = String(attachmentLinkName?.value || '').trim()
+      || attachmentHostname(url)
+      || '网页链接';
+    const attachments = [
+      ...(task.attachments || []),
+      {
+        id: generateId('attachment-link'),
+        kind: 'link',
+        name: name.slice(0, 160),
+        url,
+        addedAt: new Date().toISOString(),
+      },
+    ];
+    storeTaskAttachments(task.id, attachments, 'attachment_added', `添加链接：${name}`);
+    attachmentLinkForm.hidden = true;
+    attachmentLinkName.value = '';
+    attachmentLinkUrl.value = '';
+    showToast('链接已添加');
+  }
+
   function unfinishedDailyReviewTasks() {
     const end = endOfLocalDay();
     return workspace.tasks
@@ -1832,8 +2116,12 @@
     }
     renderReminderPresets(task);
     renderSubtasks(task);
+    renderAttachments(task);
     renderBlockSummary(task);
     renderActivity(task);
+    if (attachmentLinkForm) attachmentLinkForm.hidden = true;
+    if (attachmentLinkName) attachmentLinkName.value = '';
+    if (attachmentLinkUrl) attachmentLinkUrl.value = '';
     if (detailStatus) detailStatus.textContent = '自动保存';
   }
 
@@ -2545,6 +2833,7 @@
         .map((reminder) => Number(reminder.offsetMinutes))
         .filter(Number.isFinite),
       soundId: task.reminders?.[0]?.soundId || detailSound?.value || 'bright',
+      attachments: (task.attachments || []).map((attachment) => ({ ...attachment })),
       subtasks: (task.subtasks || []).map((subtask) => ({ text: subtask.text })),
     });
     workspace.settings.templates = workspace.settings.templates.slice(0, 50);
@@ -2568,6 +2857,11 @@
       deadline,
       reminderOffsets: deadline ? template.reminderOffsets : [],
       soundId: template.soundId,
+      attachments: (template.attachments || []).map((attachment) => ({
+        ...attachment,
+        id: generateId(attachment.kind === 'link' ? 'attachment-link' : 'attachment-file'),
+        addedAt: new Date().toISOString(),
+      })),
       subtasks: (template.subtasks || []).map((item, index) => ({
         id: generateId('subtask'),
         text: item.text,
@@ -2668,6 +2962,11 @@
       blockReason: task.blockReason || '',
       nextAction: task.nextAction || '',
       notes: task.notes || '',
+      attachments: (task.attachments || []).map((attachment) => ({
+        kind: attachment.kind === 'link' ? 'link' : 'file',
+        name: attachment.name,
+        url: attachment.kind === 'link' ? attachment.url : '',
+      })),
       subtasks: (task.subtasks || []).map((subtask) => ({
         text: subtask.text,
         done: subtask.done === true,
@@ -2681,26 +2980,46 @@
     };
   }
 
-  function reportScopeData(scope, includeCompleted, includeActivity) {
-    let tasks = [];
-    let scopeLabel = '';
+  function exportScopeTasks(scope) {
     if (scope === 'task') {
       const task = findTask(selectedTaskId);
-      if (task) tasks = [task];
-      scopeLabel = task ? `当前待办 · ${task.text}` : '当前待办';
-    } else {
-      const listId = viewListId();
-      if (listId) {
-        const listIds = new Set(Domain.todoListDescendantIds(workspace.lists, listId));
-        tasks = workspace.tasks.filter((task) => listIds.has(String(task.listId || '')));
-        scopeLabel = `当前名录 · ${listPath(listId)}及子名录`;
-      } else {
-        tasks = currentFilteredTasks();
-        scopeLabel = `当前视图 · ${viewTitle?.textContent || '待办'}`;
-      }
+      return task ? [task] : [];
     }
+    if (scope === 'selected') {
+      return workspace.tasks.filter((task) => selectedTaskIds.has(task.id));
+    }
+    if (scope === 'list') {
+      const listId = viewListId();
+      if (!listId) return [];
+      const listIds = new Set(Domain.todoListDescendantIds(workspace.lists, listId));
+      return workspace.tasks.filter((task) => listIds.has(String(task.listId || '')));
+    }
+    return currentFilteredTasks();
+  }
+
+  function exportScopeLabel(scope) {
+    if (scope === 'task') {
+      const task = findTask(selectedTaskId);
+      return task ? `仅当前待办 · ${task.text}` : '仅当前待办';
+    }
+    if (scope === 'selected') return `已选待办 · ${selectedTaskIds.size} 项`;
+    if (scope === 'list') {
+      const listId = viewListId();
+      return listId ? `当前分类 · ${listPath(listId)}及子分类` : '当前分类及子分类';
+    }
+    return `当前筛选 · ${viewTitle?.textContent || '待办'}`;
+  }
+
+  function exportCandidates(scope, includeCompleted) {
+    let tasks = exportScopeTasks(scope);
     if (!includeCompleted) tasks = tasks.filter((task) => task.done !== true);
-    tasks = Domain.sortDetailedTodos(tasks);
+    return Domain.sortDetailedTodos(tasks);
+  }
+
+  function reportScopeData(scope, includeCompleted, includeActivity, selectedIds = null) {
+    const tasks = exportCandidates(scope, includeCompleted)
+      .filter((task) => !selectedIds || selectedIds.has(task.id));
+    const scopeLabel = exportScopeLabel(scope);
     const now = Date.now();
     const summary = {
       total: tasks.length,
@@ -2715,7 +3034,7 @@
     };
     const title = scope === 'task'
       ? tasks[0]?.text || '待办报告'
-      : scopeLabel.replace(/^当前名录 ·\s*/, '') || '待办报告';
+      : scopeLabel.replace(/^(?:当前分类|当前名录|当前筛选|已选待办) ·\s*/, '') || '待办报告';
     return {
       title,
       scopeLabel,
@@ -2731,6 +3050,41 @@
     };
   }
 
+  function resetExportSelection(scope) {
+    exportSelectionIds = new Set(exportScopeTasks(scope).map((task) => task.id));
+  }
+
+  function renderExportTaskList(scope, includeCompleted) {
+    if (!exportSelection || !exportTaskList || !exportSelectionCount) return;
+    if (scope === 'task') {
+      exportSelection.hidden = true;
+      exportTaskList.replaceChildren();
+      exportCandidateIds = new Set();
+      return;
+    }
+    exportSelection.hidden = false;
+    const tasks = exportCandidates(scope, includeCompleted);
+    exportCandidateIds = new Set(tasks.map((task) => task.id));
+    const selectedCount = tasks.filter((task) => exportSelectionIds.has(task.id)).length;
+    exportSelectionCount.textContent = `已选 ${selectedCount} / ${tasks.length}`;
+    exportTaskList.innerHTML = tasks.length
+      ? tasks.map((task) => {
+        const status = statusLabel(taskStatus(task));
+        const due = task.deadline ? formatDue(task.deadline) : '无日期';
+        return `
+          <label class="todo-export-task-row">
+            <input type="checkbox" data-export-task-id="${escapeHtml(task.id)}"${exportSelectionIds.has(task.id) ? ' checked' : ''} />
+            <span class="todo-export-task-main">
+              <strong title="${escapeHtml(task.text)}">${escapeHtml(task.text)}</strong>
+              <small>${escapeHtml(listPath(task.listId))} · ${escapeHtml(status)}</small>
+            </span>
+            <time>${escapeHtml(due)}</time>
+          </label>
+        `;
+      }).join('')
+      : '<div class="todo-attachment-empty">当前范围内没有可导出的待办。</div>';
+  }
+
   function updateExportDialogNote() {
     if (!exportNote) return;
     const task = findTask(selectedTaskId);
@@ -2738,15 +3092,30 @@
     if (exportScope) {
       const taskOption = exportScope.querySelector('option[value="task"]');
       const listOption = exportScope.querySelector('option[value="list"]');
+      const filterOption = exportScope.querySelector('option[value="filter"]');
+      const selectedOption = exportScope.querySelector('option[value="selected"]');
       if (taskOption) taskOption.disabled = !task;
-      if (listOption) {
-        listOption.textContent = listId ? '当前名录及子名录' : '当前筛选结果';
+      if (listOption) listOption.disabled = !listId;
+      if (filterOption) filterOption.disabled = currentFilteredTasks().length === 0;
+      if (selectedOption) {
+        selectedOption.disabled = selectedTaskIds.size === 0;
+        selectedOption.textContent = selectedTaskIds.size
+          ? `已选待办（${selectedTaskIds.size}）`
+          : '已选待办';
       }
     }
-    const scope = exportScope?.value === 'task' && task ? 'task' : 'list';
+    const scope = ['task', 'list', 'filter', 'selected'].includes(exportScope?.value)
+      ? exportScope.value
+      : 'filter';
     const includeCompleted = exportIncludeCompleted?.checked !== false;
     const includeActivity = exportIncludeActivity?.checked === true;
-    const report = reportScopeData(scope, includeCompleted, includeActivity);
+    renderExportTaskList(scope, includeCompleted);
+    const report = reportScopeData(
+      scope,
+      includeCompleted,
+      includeActivity,
+      scope === 'task' ? null : exportSelectionIds
+    );
     exportNote.textContent = report.tasks.length
       ? `将导出 ${report.tasks.length} 条待办，格式为${exportFormat?.value === 'docx' ? ' Word' : ' PDF'}。`
       : '当前范围内没有可导出的待办。';
@@ -2755,7 +3124,15 @@
   function openExportDialog(source = 'list') {
     if (!exportDialog || !exportScope) return;
     const hasTask = Boolean(findTask(selectedTaskId));
-    exportScope.value = source === 'task' && hasTask ? 'task' : 'list';
+    const listId = viewListId();
+    exportScope.value = source === 'task' && hasTask
+      ? 'task'
+      : selectedTaskIds.size
+        ? 'selected'
+        : listId
+          ? 'list'
+          : 'filter';
+    resetExportSelection(exportScope.value);
     exportDialog.hidden = false;
     updateExportDialogNote();
     requestAnimationFrame(() => exportScope.focus({ preventScroll: true }));
@@ -2763,14 +3140,23 @@
 
   function closeExportDialog() {
     if (exportDialog) exportDialog.hidden = true;
+    exportSelectionIds = new Set();
+    exportCandidateIds = new Set();
   }
 
   async function submitExportReport() {
     if (typeof window.notchAPI?.exportTodoReport !== 'function') return;
-    const scope = exportScope?.value === 'task' && findTask(selectedTaskId) ? 'task' : 'list';
+    const scope = ['task', 'list', 'filter', 'selected'].includes(exportScope?.value)
+      ? exportScope.value
+      : 'filter';
     const includeCompleted = exportIncludeCompleted?.checked !== false;
     const includeActivity = exportIncludeActivity?.checked === true;
-    const report = reportScopeData(scope, includeCompleted, includeActivity);
+    const report = reportScopeData(
+      scope,
+      includeCompleted,
+      includeActivity,
+      scope === 'task' ? null : exportSelectionIds
+    );
     if (!report.tasks.length) {
       showToast('当前范围内没有可导出的待办');
       return;
@@ -2866,6 +3252,31 @@
   });
   backupNowButton?.addEventListener('click', () => backupTodoData(true));
   siriImportButton?.addEventListener('click', openSiriImportDialog);
+  attachmentAddFile?.addEventListener('click', chooseAttachments);
+  attachmentAddLink?.addEventListener('click', () => {
+    if (!findTask(selectedTaskId) || !attachmentLinkForm) return;
+    attachmentLinkForm.hidden = false;
+    requestAnimationFrame(() => attachmentLinkName?.focus({ preventScroll: true }));
+  });
+  attachmentLinkCancel?.addEventListener('click', () => {
+    if (attachmentLinkForm) attachmentLinkForm.hidden = true;
+  });
+  attachmentLinkSubmit?.addEventListener('click', addAttachmentLink);
+  [attachmentLinkName, attachmentLinkUrl].forEach((input) => {
+    input?.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      addAttachmentLink();
+    });
+  });
+  attachmentList?.addEventListener('click', (event) => {
+    const action = event.target.closest('[data-attachment-action]');
+    if (!action) return;
+    const attachmentId = action.dataset.attachmentId;
+    if (action.dataset.attachmentAction === 'open') openAttachment(attachmentId);
+    else if (action.dataset.attachmentAction === 'relink') void relinkAttachment(attachmentId);
+    else if (action.dataset.attachmentAction === 'remove') removeAttachment(attachmentId);
+  });
   exportReportButton?.addEventListener('click', () => openExportDialog('list'));
   detailDesktopCard?.addEventListener('click', () => {
     const task = findTask(selectedTaskId);
@@ -2875,10 +3286,35 @@
   detailExportReport?.addEventListener('click', () => openExportDialog('task'));
   exportDataButton?.addEventListener('click', exportTodoData);
   importDataButton?.addEventListener('click', importTodoData);
-  exportScope?.addEventListener('change', updateExportDialogNote);
+  exportScope?.addEventListener('change', () => {
+    resetExportSelection(exportScope.value);
+    updateExportDialogNote();
+  });
   exportFormat?.addEventListener('change', updateExportDialogNote);
   exportIncludeCompleted?.addEventListener('change', updateExportDialogNote);
   exportIncludeActivity?.addEventListener('change', updateExportDialogNote);
+  exportTaskList?.addEventListener('change', (event) => {
+    const checkbox = event.target.closest('[data-export-task-id]');
+    if (!checkbox) return;
+    if (checkbox.checked) exportSelectionIds.add(checkbox.dataset.exportTaskId);
+    else exportSelectionIds.delete(checkbox.dataset.exportTaskId);
+    updateExportDialogNote();
+  });
+  exportSelection?.addEventListener('click', (event) => {
+    const action = event.target.closest('[data-export-selection-action]')?.dataset.exportSelectionAction;
+    if (!action) return;
+    if (action === 'all') {
+      exportCandidateIds.forEach((taskId) => exportSelectionIds.add(taskId));
+    } else if (action === 'none') {
+      exportCandidateIds.forEach((taskId) => exportSelectionIds.delete(taskId));
+    } else if (action === 'invert') {
+      exportCandidateIds.forEach((taskId) => {
+        if (exportSelectionIds.has(taskId)) exportSelectionIds.delete(taskId);
+        else exportSelectionIds.add(taskId);
+      });
+    }
+    updateExportDialogNote();
+  });
   exportCancel?.addEventListener('click', closeExportDialog);
   exportCancelButton?.addEventListener('click', closeExportDialog);
   exportDialog?.addEventListener('click', (event) => {
@@ -4163,6 +4599,10 @@
     },
     quickAdd: quickAddText,
     handleEscape: () => {
+      if (attachmentLinkForm && !attachmentLinkForm.hidden) {
+        attachmentLinkForm.hidden = true;
+        return true;
+      }
       if (siriImportDialog && !siriImportDialog.hidden) {
         closeSiriImportDialog();
         return true;

@@ -470,6 +470,30 @@
                     <span>备注</span>
                     <textarea id="todo-detail-notes" rows="4" maxlength="12000" placeholder="补充上下文、链接或执行说明…"></textarea>
                   </label>
+                  <section class="todo-detail-section todo-attachments-section">
+                    <div class="todo-section-head">
+                      <div>
+                        <strong>附件与链接</strong>
+                        <small id="todo-attachment-progress">0 项</small>
+                      </div>
+                      <div class="todo-attachment-actions">
+                        <button id="todo-attachment-add-file" type="button">添加文件</button>
+                        <button id="todo-attachment-add-link" type="button">添加链接</button>
+                      </div>
+                    </div>
+                    <div class="todo-attachment-list" id="todo-attachment-list"></div>
+                    <div class="todo-attachment-link-editor" id="todo-attachment-link-form" hidden>
+                      <input id="todo-attachment-link-name" type="text" maxlength="160" placeholder="链接名称，可留空" autocomplete="off" />
+                      <input id="todo-attachment-link-url" type="url" maxlength="1200" placeholder="https://example.com" autocomplete="off" required />
+                      <div>
+                        <button id="todo-attachment-link-cancel" type="button">取消</button>
+                        <button id="todo-attachment-link-submit" type="button">添加</button>
+                      </div>
+                    </div>
+                    <div class="todo-attachment-note" id="todo-attachment-note">
+                      仅记录本地文件路径，不会复制、移动或删除原文件；从待办中移除附件也不会影响电脑里的文件。
+                    </div>
+                  </section>
                   <section class="todo-block-summary" id="todo-block-summary" hidden>
                     <div class="todo-block-summary-head">
                       <div>
@@ -853,8 +877,10 @@
               <label>
                 <span>导出范围</span>
                 <select id="todo-export-scope">
-                  <option value="task">当前待办</option>
-                  <option value="list">当前名录及子名录</option>
+                  <option value="task">仅当前待办</option>
+                  <option value="list">当前分类及子分类</option>
+                  <option value="filter">当前筛选结果</option>
+                  <option value="selected">已选待办</option>
                 </select>
               </label>
               <label>
@@ -875,6 +901,20 @@
               <input id="todo-export-include-activity" type="checkbox" />
               <i aria-hidden="true"></i>
             </label>
+            <section class="todo-export-selection" id="todo-export-selection" hidden>
+              <header>
+                <div>
+                  <strong>选择要导出的待办</strong>
+                  <small id="todo-export-selection-count">已选 0 / 0</small>
+                </div>
+                <div>
+                  <button type="button" data-export-selection-action="all">全选</button>
+                  <button type="button" data-export-selection-action="none">全不选</button>
+                  <button type="button" data-export-selection-action="invert">反选</button>
+                </div>
+              </header>
+              <div class="todo-export-task-list" id="todo-export-task-list"></div>
+            </section>
             <p class="todo-export-note" id="todo-export-note"></p>
             <footer>
               <button id="todo-export-cancel-button" type="button">取消</button>

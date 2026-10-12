@@ -988,6 +988,71 @@ function writeTodoBackup(data, force = false) {
 
 ipcMain.handle('todos:backup', (event, data, force = false) => writeTodoBackup(data, force === true));
 
+const TODO_ATTACHMENT_LIMIT = 50;
+const TODO_ATTACHMENT_PREVIEW_LIMIT_BYTES = 12 * 1024 * 1024;
+const TODO_ATTACHMENT_IMAGE_PATTERN = /\.(?:avif|bmp|gif|jpe?g|png|webp)$/i;
+
+function describeTodoAttachmentFile(filePath) {
+  const normalized = String(filePath || '').trim();
+  if (!normalized || !path.isAbsolute(normalized)) return null;
+  const name = path.basename(normalized);
+  try {
+    const stats = fs.statSync(normalized);
+    if (!stats.isFile()) return null;
+    const item = {
+      ok: true,
+      exists: true,
+      path: normalized,
+      name,
+      size: stats.size,
+      modifiedAt: stats.mtime.toISOString(),
+    };
+    if (stats.size <= TODO_ATTACHMENT_PREVIEW_LIMIT_BYTES && TODO_ATTACHMENT_IMAGE_PATTERN.test(name)) {
+      try {
+        const image = nativeImage.createFromPath(normalized);
+        if (!image.isEmpty()) {
+          item.previewUrl = image.resize({ width: 96, height: 96, quality: 'good' }).toDataURL();
+        }
+      } catch (error) {}
+    }
+    return item;
+  } catch (error) {
+    return {
+      ok: true,
+      exists: false,
+      path: normalized,
+      name,
+      size: 0,
+      modifiedAt: '',
+    };
+  }
+}
+
+function describeTodoAttachmentPaths(value) {
+  const paths = [...new Set((Array.isArray(value) ? value : [value])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean))]
+    .slice(0, TODO_ATTACHMENT_LIMIT);
+  return {
+    ok: true,
+    items: paths.map(describeTodoAttachmentFile).filter(Boolean),
+  };
+}
+
+ipcMain.handle('todos:choose-attachments', async () => {
+  const options = {
+    title: '选择待办附件',
+    properties: ['openFile', 'multiSelections'],
+  };
+  const result = await showOwnedOpenDialog(options);
+  if (result.canceled) return { ok: false, canceled: true, items: [] };
+  return describeTodoAttachmentPaths(result.filePaths);
+});
+
+ipcMain.handle('todos:describe-attachments', (event, paths) => (
+  describeTodoAttachmentPaths(paths)
+));
+
 ipcMain.handle('todos:export', async (event, data) => {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return { ok: false, error: 'invalid_data' };

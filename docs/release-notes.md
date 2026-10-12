@@ -2,10 +2,19 @@
 
 | 电脑 | 下载文件 | 安装方式 |
 | --- | --- | --- |
-| Mac · Apple Silicon · macOS 13+ | [下载 macOS 安装包（.dmg）](https://github.com/zxc19950223/Dingdo/releases/download/v2.0.0/Dingdo-2.0.0-arm64.dmg) | 打开 DMG，将应用拖入「应用程序」 |
-| Windows 10/11 · Intel / AMD 64 位（x64） | [下载 Windows 安装包（.exe）](https://github.com/zxc19950223/Dingdo/releases/download/v2.0.0/Dingdo-2.0.0-windows-x64-setup.exe) | 双击 EXE，按安装向导完成安装 |
+| Mac · Apple Silicon · macOS 13+ | [下载 macOS 安装包（.dmg）](https://github.com/zxc19950223/Dingdo/releases/download/v2.1.0/Dingdo-2.1.0-arm64.dmg) | 打开 DMG，将应用拖入「应用程序」 |
+| Windows 10/11 · Intel / AMD 64 位（x64） | [下载 Windows 安装包（.exe）](https://github.com/zxc19950223/Dingdo/releases/download/v2.1.0/Dingdo-2.1.0-windows-x64-setup.exe) | 双击 EXE，按安装向导完成安装 |
 
 `.sha256` 是对应文件的完整性校验码，不是安装包。官网提供 macOS 与 Windows 两个下载入口。
+
+## 2.1.0
+
+- 待办详情新增附件与链接，支持添加多个本地文件或 HTTP/HTTPS 链接、打开、图片缩略图、重新定位和移除。
+- 本地附件默认只记录原文件路径，不复制、移动或删除原文件；从待办中移除附件也不会影响电脑上的文件。
+- 导出报告可以选择当前待办、当前分类及子分类、当前筛选结果或已选待办，并支持逐条勾选、全选、全不选和反选。
+- Word 与 PDF 报告的任务明细新增附件和链接清单。
+- 修复亮色主题下展开和收起时先闪白再闪黑的问题，并统一岛体背景与动画时长。
+- 修复悬浮预览自动收起与点击展开竞争，导致窗口闪一下又缩回的问题。
 
 ## 2.0.0
 

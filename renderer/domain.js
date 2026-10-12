@@ -591,6 +591,7 @@
       soundId: ['none', 'soft', 'bright', 'alert'].includes(value.soundId)
         ? value.soundId
         : 'bright',
+      attachments: normalizeTodoAttachments(value.attachments),
       subtasks: (Array.isArray(value.subtasks) ? value.subtasks : [])
         .map((item, subtaskIndex) => normalizeTodoText(item?.text || item, 160))
         .filter(Boolean)
@@ -663,6 +664,40 @@
       .filter(Boolean)
       .sort((left, right) => Date.parse(left.at) - Date.parse(right.at))
       .slice(-800);
+  }
+
+  function normalizeTodoAttachments(value) {
+    return (Array.isArray(value) ? value : [])
+      .map((item, index) => {
+        if (!item || typeof item !== 'object') return null;
+        const kind = item.kind === 'link' ? 'link' : 'file';
+        const addedAt = normalizeTodoDate(item.addedAt) || new Date().toISOString();
+        if (kind === 'link') {
+          const url = normalizeHttpUrl(item.url);
+          if (!url) return null;
+          const name = normalizeTodoText(item.name || item.title, 160) || linkHostname(url) || '网页链接';
+          return {
+            id: String(item.id || `attachment-link-${index}-${Math.random().toString(36).slice(2, 8)}`),
+            kind,
+            name,
+            url,
+            addedAt,
+          };
+        }
+        const filePath = String(item.path || '').trim();
+        if (!filePath || !/^(?:\/|[a-z]:[\\/]|\\\\)/i.test(filePath)) return null;
+        const size = Number(item.size);
+        return {
+          id: String(item.id || `attachment-file-${index}-${Math.random().toString(36).slice(2, 8)}`),
+          kind,
+          name: normalizeTodoText(item.name || item.title, 160) || filePath.split(/[\\/]/).pop() || '本地文件',
+          path: filePath,
+          size: Number.isFinite(size) && size >= 0 ? Math.round(size) : 0,
+          addedAt,
+        };
+      })
+      .filter(Boolean)
+      .slice(-50);
   }
 
   function normalizeTodoSettings(value, lists) {
@@ -809,6 +844,7 @@
       strongReminderAt,
       strongReminderLinked,
       activity: normalizeTodoActivity(source.activity),
+      attachments: normalizeTodoAttachments(source.attachments),
       subtasks: normalizeTodoSubtasks(source.subtasks),
       tags: (Array.isArray(source.tags) ? source.tags : [])
         .map((tag) => normalizeTodoText(tag, 24))
@@ -1890,6 +1926,7 @@
     normalizeDailyReviewSettings,
     normalizeSiriImportSettings,
     normalizeTodoActivity,
+    normalizeTodoAttachments,
     nextTodoDeadline,
     normalizeTodoSettings,
     normalizeReminderHistory,

@@ -11,7 +11,7 @@ const {
 
 const report = {
   title: '项目 A 待办报告',
-  scopeLabel: '当前名录 · 工作 / 项目 A及子名录',
+  scopeLabel: '当前分类 · 工作 / 项目 A及子分类',
   generatedAt: '2026-09-21T10:00:00.000Z',
   summary: [
     { label: '任务总数', value: '2' },
@@ -28,6 +28,10 @@ const report = {
     blockReason: '等待客户签字',
     nextAction: '明天上午联系客户',
     notes: '材料已经整理完成。',
+    attachments: [
+      { kind: 'file', name: '客户签字页.pdf' },
+      { kind: 'link', name: '采购页面', url: 'https://example.com/purchase' },
+    ],
     subtasks: [{ text: '整理材料', done: true }],
     activity: [{ at: '2026-09-21T09:00:00.000Z', message: '标记受阻' }],
   }],
@@ -48,6 +52,8 @@ test('todo report HTML contains summary tables and task details', () => {
   assert.match(html, /明天上午联系客户/);
   assert.match(html, /提交项目材料/);
   assert.match(html, /活动记录/);
+  assert.match(html, /客户签字页\.pdf/);
+  assert.match(html, /https:\/\/example\.com\/purchase/);
 });
 
 test('todo report DOCX is a real OOXML document with expected content', () => {
@@ -61,4 +67,6 @@ test('todo report DOCX is a real OOXML document with expected content', () => {
   assert.match(documentXml, /项目 A 待办报告/);
   assert.match(documentXml, /等待别人：等待客户签字/);
   assert.match(documentXml, /明天上午联系客户/);
+  assert.match(documentXml, /客户签字页\.pdf/);
+  assert.match(documentXml, /https:\/\/example\.com\/purchase/);
 });

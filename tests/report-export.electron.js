@@ -12,7 +12,7 @@ const {
 
 const report = {
   title: '导出冒烟测试',
-  scopeLabel: '当前名录 · 工作及子名录',
+    scopeLabel: '当前分类 · 工作及子分类',
   generatedAt: '2026-09-21T10:00:00.000Z',
   summary: [
     { label: '任务总数', value: '1' },

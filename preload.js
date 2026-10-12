@@ -49,6 +49,8 @@ contextBridge.exposeInMainWorld('notchAPI', {
   backupTodoData: (data, force) => ipcRenderer.invoke('todos:backup', data, force === true),
   exportTodoData: (data) => ipcRenderer.invoke('todos:export', data),
   exportTodoReport: (payload) => ipcRenderer.invoke('todos:export-report', payload),
+  chooseTodoAttachments: () => ipcRenderer.invoke('todos:choose-attachments'),
+  describeTodoAttachments: (paths) => ipcRenderer.invoke('todos:describe-attachments', paths),
   importTodoData: () => ipcRenderer.invoke('todos:import'),
   listReminderLists: () => ipcRenderer.invoke('reminders:lists'),
   listReminderItems: (listId) => ipcRenderer.invoke('reminders:items', listId),

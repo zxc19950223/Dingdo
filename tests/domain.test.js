@@ -28,6 +28,7 @@ const {
   normalizeDailyReviewSettings,
   normalizeSiriImportSettings,
   normalizeTodoActivity,
+  normalizeTodoAttachments,
   DEFAULT_STRONG_REMINDER_QUESTIONS,
   createNextTodoOccurrence,
   todoListDescendantIds,
@@ -757,6 +758,45 @@ test('daily review settings and task activity are normalized safely', () => {
   ]).map((item) => [item.type, item.message]), [
     ['created', '创建待办'],
   ]);
+});
+
+test('todo attachments preserve local files and safe HTTP links while rejecting invalid entries', () => {
+  const attachments = normalizeTodoAttachments([
+    {
+      id: 'file-1',
+      kind: 'file',
+      name: '方案.pdf',
+      path: '/Users/demo/Documents/方案.pdf',
+      size: 2048,
+      addedAt: '2026-09-18T10:00:00.000Z',
+    },
+    {
+      id: 'link-1',
+      kind: 'link',
+      name: '项目主页',
+      url: 'https://example.com/docs',
+      addedAt: '2026-09-18T10:01:00.000Z',
+    },
+    {
+      id: 'invalid-link',
+      kind: 'link',
+      name: '不安全链接',
+      url: 'javascript:alert(1)',
+    },
+    {
+      id: 'invalid-file',
+      kind: 'file',
+      name: '相对路径',
+      path: 'relative/file.pdf',
+    },
+  ]);
+
+  assert.deepEqual(attachments.map((item) => [item.kind, item.name]), [
+    ['file', '方案.pdf'],
+    ['link', '项目主页'],
+  ]);
+  assert.equal(attachments[0].size, 2048);
+  assert.equal(attachments[1].url, 'https://example.com/docs');
 });
 
 test('manual todo ordering keeps pinned tasks on top and persists explicit order', () => {

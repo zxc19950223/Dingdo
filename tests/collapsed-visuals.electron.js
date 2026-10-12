@@ -304,12 +304,17 @@ async function main() {
     const expanded = await window.webContents.executeJavaScript(`
       (async () => {
         const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        let modeChangeExpanded = false;
+        document.addEventListener('notch:modechange', (event) => {
+          if (event.detail?.expanded) modeChangeExpanded = true;
+        });
         document.getElementById('notch-eyes').click();
         const deadline = performance.now() + 3000;
-        while (!document.getElementById('app').classList.contains('expanded') && performance.now() < deadline) {
+        while (!modeChangeExpanded && performance.now() < deadline) {
           await sleep(10);
         }
         return {
+          modeChangeExpanded,
           expanded: document.getElementById('app').classList.contains('expanded'),
           eyesHidden: document.getElementById('notch-eyes').hidden,
           mediaHidden: document.getElementById('notch-media').hidden,
@@ -317,6 +322,7 @@ async function main() {
       })()
     `);
     assert.deepEqual(expanded, {
+      modeChangeExpanded: true,
       expanded: true,
       eyesHidden: true,
       mediaHidden: true,

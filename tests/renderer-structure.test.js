@@ -61,6 +61,13 @@ test('todo page exposes smart views, hierarchy, details, reminders, and subtasks
   assert.match(html, /id="todo-export-format"/);
   assert.match(html, /id="todo-export-include-completed"/);
   assert.match(html, /id="todo-export-include-activity"/);
+  assert.match(html, /id="todo-export-selection"/);
+  assert.match(html, /id="todo-export-task-list"/);
+  assert.match(html, /id="todo-attachment-list"/);
+  assert.match(html, /id="todo-attachment-add-file"/);
+  assert.match(html, /id="todo-attachment-add-link"/);
+  assert.match(html, /id="todo-attachment-note"/);
+  assert.match(html, /不会复制、移动或删除原文件/);
   assert.match(html, /id="todo-detail-desktop-card"/);
   assert.match(html, /id="todo-siri-import"/);
   assert.match(html, /id="siri-import-dialog"/);
@@ -225,4 +232,20 @@ test('hidden visual widgets stop presentation-only background work', () => {
   assert.match(effectsJs, /setEnabled/);
   assert.match(effectsJs, /notch:home-modules-changed/);
   assert.match(workspaceJs, /NotchHome\?\.isVisible/);
+});
+
+test('island motion keeps frost backgrounds on the animated shell and closes to the fixed dark strip', () => {
+  assert.match(
+    stylesCss,
+    /#app\.closing \.notch \{[\s\S]*?background: #0b0c0f;/
+  );
+  assert.match(
+    stylesCss,
+    /html\[data-theme='frost'\] \.panel \{[\s\S]*?background: transparent !important;/
+  );
+  assert.match(
+    stylesCss,
+    /#app\.opening\.expanded \.panel::after,[\s\S]*?#app\.closing \.panel::after \{[\s\S]*?opacity: 0;/
+  );
+  assert.match(appJs, /waitForPanelMotion\('clip-path'\)/);
 });

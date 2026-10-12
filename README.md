@@ -41,13 +41,14 @@
 
 - 支持大类和小类两级名录，可调整名称、顺序和提醒默认值。
 - 每条待办支持截止时间、优先级、备注、标签、置顶和重复规则。
+- 每条待办可以关联本地文件或 HTTP/HTTPS 链接；本地文件默认只保存路径，不复制、移动或删除原文件。
 - 支持子任务和完成进度，可以在列表中直接展开查看。
 - 支持待办、进行中、受阻和已完成状态。
 - 受阻任务需要记录原因类型、具体说明和下一步计划。
 - 支持今天、未来 7 天、逾期、受阻、全部、已完成和历史记录等智能视图。
 - 支持搜索、筛选、排序、批量选择、模板和回收站。
 - 活动记录会保留创建、改期、提醒触发、稍后处理、完成和恢复等操作。
-- 支持导出当前待办或当前名录及子名录，生成 Word `.docx` 或 PDF 文件。
+- 支持导出当前待办、当前分类及子分类、当前筛选结果或已选待办；导出筛选结果时可以逐条勾选和排除，生成 Word `.docx` 或 PDF 文件。
 - 重要任务可以发送到桌面卡片，并在桌面直接完成或打开详情。
 
 ## 提醒
@@ -116,16 +117,17 @@
 - 待办、设置、模板和活动记录默认保存在本机。
 - 可以手动备份、导入和导出工作区数据。
 - Siri 导入只读取用户指定的提醒列表。
+- 待办附件默认只保存本地文件路径，Dingdo 不会上传或复制原文件。
 - API Key 使用系统安全存储加密，渲染页面无法读取明文。
 
 ## 下载与安装
 
-> 当前稳定版本：**2.0.0** · **macOS 13+ Apple Silicon** / **Windows 10/11 x64**
+> 当前稳定版本：**2.1.0** · **macOS 13+ Apple Silicon** / **Windows 10/11 x64**
 
 | 平台 | 下载 |
 | --- | --- |
-| macOS | [Dingdo-2.0.0-arm64.dmg](https://github.com/zxc19950223/Dingdo/releases/download/v2.0.0/Dingdo-2.0.0-arm64.dmg) |
-| Windows | [Dingdo-2.0.0-windows-x64-setup.exe](https://github.com/zxc19950223/Dingdo/releases/download/v2.0.0/Dingdo-2.0.0-windows-x64-setup.exe) |
+| macOS | [Dingdo-2.1.0-arm64.dmg](https://github.com/zxc19950223/Dingdo/releases/download/v2.1.0/Dingdo-2.1.0-arm64.dmg) |
+| Windows | [Dingdo-2.1.0-windows-x64-setup.exe](https://github.com/zxc19950223/Dingdo/releases/download/v2.1.0/Dingdo-2.1.0-windows-x64-setup.exe) |
 
 ### macOS
 
@@ -192,7 +194,7 @@ scripts/capture-demo-screenshots.js
 
 ## 更新日志
 
-当前稳定版本为 **v2.0.0**。完整版本历史见 [CHANGELOG.md](CHANGELOG.md)。
+当前稳定版本为 **v2.1.0**。完整版本历史见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## License
 

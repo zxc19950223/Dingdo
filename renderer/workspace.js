@@ -2549,6 +2549,20 @@
     return !workspaceExpanded && !document.hidden;
   }
 
+  function restoreCollapsedModeIfIdle() {
+    const appElement = document.getElementById('app');
+    if (
+      workspaceExpanded
+      || appElement?.classList.contains('opening')
+      || appElement?.classList.contains('expanded')
+      || appElement?.classList.contains('closing')
+    ) {
+      return false;
+    }
+    window.notchAPI?.setMode?.('collapsed').catch?.(() => {});
+    return true;
+  }
+
   function prefersReducedMotion() {
     return appearanceSettings.reduceMotion === true || reducedMotionQuery.matches;
   }
@@ -2691,7 +2705,7 @@
       delete notchElement.dataset.previewKind;
       musicPeekShown = false;
       musicPeekGeneration += 1;
-      if (!workspaceExpanded) window.notchAPI?.setMode?.('collapsed').catch?.(() => {});
+      restoreCollapsedModeIfIdle();
     }, 150);
   }
 
@@ -2722,7 +2736,7 @@
         musicPeekNativeTimer = null;
         if (generation !== musicPeekGeneration || workspaceExpanded || document.hidden) return;
         musicPeekShown = false;
-        window.notchAPI?.setMode?.('collapsed').catch?.(() => {});
+        restoreCollapsedModeIfIdle();
       }, 240);
     }, 2800);
   }
@@ -2745,7 +2759,7 @@
     musicPeekNativeTimer = setTimeout(() => {
       musicPeekNativeTimer = null;
       if (workspaceExpanded) return;
-      window.notchAPI?.setMode?.('collapsed').catch?.(() => {});
+      restoreCollapsedModeIfIdle();
     }, 240);
   }
 
@@ -2815,7 +2829,7 @@
       notchElement.classList.remove('music-peek', 'todo-peek');
       delete notchElement.dataset.previewKind;
       musicPeekShown = false;
-      if (!workspaceExpanded) window.notchAPI?.setMode?.('collapsed').catch?.(() => {});
+      restoreCollapsedModeIfIdle();
     }, duration);
     return true;
   }

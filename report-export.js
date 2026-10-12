@@ -54,6 +54,19 @@ function normalizeReportActivity(value) {
   };
 }
 
+function normalizeReportAttachment(value) {
+  const source = value && typeof value === 'object' ? value : {};
+  const kind = source.kind === 'link' ? 'link' : 'file';
+  const name = cleanSingleLine(source.name || source.title, 180);
+  if (!name) return null;
+  if (kind === 'link') {
+    const url = cleanSingleLine(source.url, 1200);
+    if (!/^https?:\/\//i.test(url)) return null;
+    return { kind, name, url };
+  }
+  return { kind, name, url: '' };
+}
+
 function normalizeReportTask(value, index = 0) {
   const source = value && typeof value === 'object' ? value : {};
   const title = cleanSingleLine(source.title || source.text, 240);
@@ -74,6 +87,10 @@ function normalizeReportTask(value, index = 0) {
     blockReason: cleanText(source.blockReason, 2000),
     nextAction: cleanText(source.nextAction, 1200),
     notes: cleanText(source.notes, 12000),
+    attachments: (Array.isArray(source.attachments) ? source.attachments : [])
+      .map(normalizeReportAttachment)
+      .filter(Boolean)
+      .slice(0, 50),
     subtasks: (Array.isArray(source.subtasks) ? source.subtasks : [])
       .map(normalizeReportSubtask)
       .filter(Boolean)
@@ -156,6 +173,13 @@ function taskReasonSummary(task) {
     .join('：');
 }
 
+function reportAttachmentText(attachment) {
+  if (attachment.kind === 'link') {
+    return `[链接] ${attachment.name}${attachment.url ? ` · ${attachment.url}` : ''}`;
+  }
+  return `[文件] ${attachment.name}`;
+}
+
 function reportDetailRows(task) {
   return [
     ['所属名录', task.listPath],
@@ -170,6 +194,7 @@ function reportDetailRows(task) {
     ['受阻类型', task.blockReasonType],
     ['受阻原因', task.blockReason],
     ['下一步', task.nextAction],
+    ['附件与链接', task.attachments.map(reportAttachmentText).join('\n')],
   ].filter(([, value]) => value);
 }
 
